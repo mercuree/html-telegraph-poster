@@ -4,7 +4,6 @@ import json
 
 
 def _recursive_convert(element):
-    # All strings outside tags should be ignored
 
     fragment_root_element = {
         '_': element.tag
@@ -36,6 +35,7 @@ def _recursive_convert(element):
 def convert_html_to_telegraph_format(html_string):
     content = []
     for fragment in html.fragments_fromstring(html_string):
+        # All strings outside tags should be ignored
         if not isinstance(fragment, html.HtmlElement):
             continue
 
