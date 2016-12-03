@@ -35,9 +35,15 @@ def _recursive_convert(element):
 def convert_html_to_telegraph_format(html_string):
     content = []
     for fragment in html.fragments_fromstring(html_string):
-        # All strings outside tags should be ignored
+        # convert and append text nodes before starting tag
         if not isinstance(fragment, html.HtmlElement):
-            continue
+            fragment = html.fromstring('<p>%s</p>' % fragment)
 
         content.append(_recursive_convert(fragment))
+        # convert and append text nodes after closing tag
+        if fragment.tail:
+            content.append(
+                _recursive_convert(html.fromstring('<p>%s</p>' % fragment.tail))
+            )
+
     return json.dumps(content, ensure_ascii=False)

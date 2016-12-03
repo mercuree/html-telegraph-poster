@@ -20,12 +20,22 @@ Just pass html string to convert_html_to_telegraph_format()
 
 
 ### Note
-Please, note that text nodes outside html tags will be ignored.
+Please, note that text nodes outside html tags will be wrapped with paragraph.
+Before:
 ```html
-this text will be ignored
+text node before any element
 <p>
    hello 
    <a href="https://telegram.org/">Telegram</a>!
 </p>
-and this text will be ignored too
+text node after any element
+```
+After:
+```html
+<p>text node before any element</p>
+<p>
+   hello 
+   <a href="https://telegram.org/">Telegram</a>!
+</p>
+<p>text node after any element</p>
 ```
