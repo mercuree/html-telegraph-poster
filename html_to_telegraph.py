@@ -3,6 +3,10 @@ from lxml import html
 
 
 def _recursive_convert(element):
+    # All strings outside tags should be ignored
+    if not isinstance(element, html.HtmlElement):
+        return
+
     fragment_root_element = {
         '_': element.tag
     }
@@ -16,11 +20,11 @@ def _recursive_convert(element):
             'a': dict(element.attrib)
         })
 
-    for el in element:
-        content.append(_recursive_convert(el))
+    for child in element:
+        content.append(_recursive_convert(child))
         # Append Text node after element, if exists
-        if el.tail:
-            content.append({'t': el.tail})
+        if child.tail:
+            content.append({'t': child.tail})
 
     if len(content):
         fragment_root_element.update({
