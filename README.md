@@ -17,3 +17,15 @@ About telegram telegra.ph service https://telegram.org/blog/instant-view
 
 ```
 Just pass html string to convert_html_to_telegraph_format()
+
+
+### Note
+Please, note that text nodes outside html tags will be ignored.
+```html
+this text will be ignored
+<p>
+   hello 
+   <a href="https://telegram.org/">Telegram</a>!
+</p>
+and this text will be ignored too
+```
