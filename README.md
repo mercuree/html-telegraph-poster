@@ -1,7 +1,7 @@
 # Python html to telegra.ph converter
 
 Simple python function to convert plain html text to telegra.ph format, which you can then post to telegraph.
-Telegra.ph allows `<p>, <img>, <strong>, <figure>, <figcaption>, <blockquote>` and more elements.
+Telegra.ph allows `<p>, <a>, <img>, <strong>, <figure>, <figcaption>, <blockquote>` and more elements.
 
 About telegram telegra.ph service https://telegram.org/blog/instant-view
 
