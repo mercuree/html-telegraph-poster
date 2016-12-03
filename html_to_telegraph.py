@@ -1,5 +1,5 @@
 # encoding=utf8
-import lxml
+from lxml import html
 
 
 def _recursive_convert(element):
@@ -32,5 +32,5 @@ def _recursive_convert(element):
 
 def convert_html_to_telegraph_format(html_string):
     return [
-        _recursive_convert(fragment) for fragment in lxml.html.fragments_fromstring(html_string)
+        _recursive_convert(fragment) for fragment in html.fragments_fromstring(html_string)
     ]
