@@ -8,6 +8,7 @@ About telegram telegra.ph service https://telegram.org/blog/instant-view
 ## Requirements
 * lxml
 * requests
+* requests_toolbelt
 
 ## Usage
 Simple way:
