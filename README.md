@@ -10,11 +10,24 @@ About telegram telegra.ph service https://telegram.org/blog/instant-view
 * requests
 
 ## Usage
-```python
->>> from html_to_telegraph import convert_html_to_telegraph_format
+Simple way:
 
->>> convert_html_to_telegraph_format('<p>Hello world!</p><p>Good Bye!</p>')
-[{'c': [{'t': 'Hello world!'}], '_': 'p'}, {'c': [{'t': 'Good Bye!'}], '_': 'p'}]
+```python
+>>> from html_to_telegraph import upload_to_telegraph
+
+>>> upload_to_telegraph(title='Kill all humans?', author='Bill Gates', text='<p>Hello world!</p><p>Good Bye!</p>')
+{'url': u'https://telegra.ph/Kill-all-humans-12-05', u'path': u'Kill-all-humans-12-05', 'tph_uuid': 'FzsYQzhx7LKdG1dx********', u'page_id': u'9e7732a45e**********'}
 
 ```
-Just pass html string to convert_html_to_telegraph_format()
+Hard way:
+```python
+>>> from html_to_telegraph import TelegraphPoster
+>>> t = TelegraphPoster()
+>>> t.post(title='Just another funny joke', author='by me', text='<blockquote>Really hard way</blockquote>')
+{'url': u'https://telegra.ph/Just-another-funny-joke-12-05', u'path': u'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCFiIBAxk***********', u'page_id': u'a38*************'}
+
+# We can modify this article later
+>>> t.edit(text=t.text + '<p>some text at the end</p>')
+{'url': u'https://telegra.ph/Just-another-funny-joke-12-05', u'path': u'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCF*********', u'page_id': u'a381b2********'}
+
+```
