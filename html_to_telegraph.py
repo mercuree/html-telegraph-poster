@@ -13,7 +13,7 @@ save_url = 'https://edit.telegra.ph/save'
 def clean_article_html(html_string):
 
     c = Cleaner(
-        allow_tags=['a', 'blockquote', 'br', 'figure', 'img', 'p', 'strong'],
+        allow_tags=['a', 'blockquote', 'br', 'em', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong'],
         style=True,
         remove_unknown_tags=False
     )
