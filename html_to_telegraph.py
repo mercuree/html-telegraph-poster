@@ -79,7 +79,7 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
     return json.dumps(content, ensure_ascii=False)
 
 
-def upload_to_telegraph(title, author, text, tph_uuid=None, page_id=None):
+def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_id=None):
 
     if not title:
         raise Exception('Title is required')
@@ -93,6 +93,7 @@ def upload_to_telegraph(title, author, text, tph_uuid=None, page_id=None):
         'Data': ('content.html', content, 'plain/text'),
         'title': title,
         'author': author,
+        'author_url': author_url,
         'page_id': page_id or '0'
     }
 
@@ -121,11 +122,12 @@ class TelegraphPoster(object):
     def __init__(self, tph_uuid=None, page_id=None):
         self.title = None
         self.author = None
+        self.author_url = None
         self.text = None
         self.tph_uuid = tph_uuid
         self.page_id = page_id
 
-    def post(self, title, author, text):
+    def post(self, title, author, text, author_url=''):
         result = self.edit(
             title,
             author,
@@ -133,6 +135,7 @@ class TelegraphPoster(object):
         )
         self.title = title
         self.author = author
+        self.author_url = author_url
         self.text = text
         self.tph_uuid = result['tph_uuid']
         self.page_id = result['page_id']
@@ -143,6 +146,7 @@ class TelegraphPoster(object):
             title=title or self.title,
             author=author or self.author,
             text=text or self.text,
+            author_url=self.author_url,
             tph_uuid=self.tph_uuid,
             page_id=self.page_id
         )
