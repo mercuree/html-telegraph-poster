@@ -4,6 +4,7 @@ import re
 from lxml import html
 from lxml.html.clean import Cleaner
 import requests
+from requests.compat import urlparse, quote_plus
 from requests_toolbelt import MultipartEncoder
 
 base_url = 'https://telegra.ph'
@@ -15,7 +16,8 @@ def clean_article_html(html_string):
     c = Cleaner(
         allow_tags=['a', 'blockquote', 'br', 'div', 'em', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong'],
         style=True,
-        remove_unknown_tags=False
+        remove_unknown_tags=False,
+        embedded=False
     )
     # wrap with div to be sure it is there
     # (otherwise lxml will add parent element in some cases
@@ -28,8 +30,24 @@ def clean_article_html(html_string):
     return html_string
 
 
+def preprocess_tags(element):
+    if isinstance(element, html.HtmlElement) and element.tag in ['iframe']:
+        iframe_src = element.get('src')
+        youtube = re.match('https?://(www\.)?youtube(-nocookie)?\.com/embed/', iframe_src)
+        if youtube:
+            yt_id = urlparse(iframe_src).path.replace('/embed/', '')
+            element.set('src', '/embed/youtube?url=' + quote_plus('https://www.youtube.com/watch?v=' + yt_id))
+            new_element = html.HtmlElement()
+            new_element.tag = 'figure'
+            new_element.append(element)
+            element = new_element
+
+    return element
+
+
 def _recursive_convert(element):
 
+    element = preprocess_tags(element)
     fragment_root_element = {
         '_': element.tag
     }
