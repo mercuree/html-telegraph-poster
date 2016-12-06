@@ -1,7 +1,8 @@
 # Python html to telegra.ph poster
 
-Simple python function to post plain html text to telegra.ph.
-Telegra.ph allows `<p>, <a>, <img>, <strong>, <figure>, <figcaption>, <blockquote>` and more elements.
+Simple python function to post plain html text to https://telegra.ph/.
+Telegra.ph allows `<a>, <blockquote>, <br>, <em>, <figure>, <h3>, <h4>, <img>, <p>, <strong>, ` elements.
+It also supports embedded youtube and vimeo iframe tags.
 
 About telegram telegra.ph service https://telegram.org/blog/instant-view
 
