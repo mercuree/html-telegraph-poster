@@ -19,7 +19,7 @@ def clean_article_html(html_string):
     )
     # wrap with div to be sure it is there
     # (otherwise lxml will add parent element in some cases
-    html_string = "<div>%s</div>" % html_string
+    html_string = '<div>%s</div>' % html_string
     cleaned = c.clean_html(html_string)
     # remove wrapped div
     cleaned = cleaned[5:-6]
@@ -109,12 +109,12 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
     response = r.post(save_url, timeout=4, headers=headers, cookies=cookies, data=m.to_string())
 
     result = json.loads(response.text)
-    if "path" in result:
+    if 'path' in result:
         result['tph_uuid'] = response.cookies.get('tph_uuid') or tph_uuid
-        result['url'] = base_url + '/' + result["path"]
+        result['url'] = base_url + '/' + result['path']
         return result
     else:
-        error_msg = "Telegraph error msg: " + result['error'] if 'error' in result else ""
+        error_msg = 'Telegraph error msg: ' + result['error'] if 'error' in result else ''
         raise Exception(error_msg)
 
 
