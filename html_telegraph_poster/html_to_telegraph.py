@@ -10,12 +10,14 @@ from requests_toolbelt import MultipartEncoder
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 default_user_agent = 'Python_telegraph_poster/0.1'
+allowed_tags = ['a', 'blockquote', 'br', 'em', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong']
+allowed_top_level_tags = ['blockquote', 'h3', 'h4', 'p']
 
 
 def clean_article_html(html_string):
 
     c = Cleaner(
-        allow_tags=['a', 'blockquote', 'br', 'div', 'em', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong'],
+        allow_tags=allowed_tags,
         style=True,
         remove_unknown_tags=False,
         embedded=False
@@ -88,7 +90,13 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
         if not isinstance(fragment, html.HtmlElement):
             fragment = html.fromstring('<p>%s</p>' % fragment)
 
-        content.append(_recursive_convert(fragment))
+        if fragment.tag in allowed_top_level_tags:
+            content.append(_recursive_convert(fragment))
+        else:
+            paragraph = html.HtmlElement()
+            paragraph.tag = 'p'
+            paragraph.append(fragment)
+            content.append(_recursive_convert(paragraph))
         # convert and append text nodes after closing tag
         if fragment.tail:
             content.append(
