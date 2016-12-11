@@ -9,6 +9,7 @@ from requests_toolbelt import MultipartEncoder
 
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
+default_user_agent = 'Python_telegraph_poster/0.1'
 
 
 def clean_article_html(html_string):
@@ -97,7 +98,7 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
     return json.dumps(content, ensure_ascii=False)
 
 
-def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_id=None):
+def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent):
 
     if not title:
         raise Exception('Title is required')
@@ -120,7 +121,7 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
     headers = {
         'Content-Type': m.content_type,
         'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'User-Agent': 'Python_telegraph_poster/0.1'
+        'User-Agent': user_agent
     }
     r = requests.Session()
     r.mount('https://', requests.adapters.HTTPAdapter(max_retries=3))
@@ -137,13 +138,14 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
 
 
 class TelegraphPoster(object):
-    def __init__(self, tph_uuid=None, page_id=None):
+    def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent):
         self.title = None
         self.author = None
         self.author_url = None
         self.text = None
         self.tph_uuid = tph_uuid
         self.page_id = page_id
+        self.user_agent = user_agent
 
     def post(self, title, author, text, author_url=''):
         result = self.edit(
@@ -166,5 +168,6 @@ class TelegraphPoster(object):
             text=text or self.text,
             author_url=self.author_url,
             tph_uuid=self.tph_uuid,
-            page_id=self.page_id
+            page_id=self.page_id,
+            user_agent=self.user_agent
         )
