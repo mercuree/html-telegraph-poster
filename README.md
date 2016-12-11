@@ -11,6 +11,11 @@ About telegram telegra.ph service https://telegram.org/blog/instant-view
 * requests
 * requests_toolbelt
 
+## Installation
+```Shell
+pip install git+https://github.com/mercuree/html-telegraph-poster.git 
+```
+
 ## Usage
 Simple way:
 

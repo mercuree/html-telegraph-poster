@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='html telegraph poster',
+setup(name='html_telegraph_poster',
       version='0.0.9',
       description='Posts your html to telegra.ph blogging service',
       keywords='telegra.ph post html telegram',
