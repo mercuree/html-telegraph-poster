@@ -10,8 +10,8 @@ from requests_toolbelt import MultipartEncoder
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 default_user_agent = 'Python_telegraph_poster/0.1'
-allowed_tags = ['a', 'blockquote', 'br', 'em', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong']
-allowed_top_level_tags = ['blockquote', 'h3', 'h4', 'p']
+allowed_tags = ['a', 'aside', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong']
+allowed_top_level_tags = ['aside', 'blockquote', 'h3', 'h4', 'p', 'figure']
 
 
 def clean_article_html(html_string):
