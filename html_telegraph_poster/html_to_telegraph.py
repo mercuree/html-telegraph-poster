@@ -17,6 +17,7 @@ youtube_re = re.compile('(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/')
 vimeo_re = re.compile('(https?:)?//player\.vimeo\.com/video/(\d+)')
 twitter_re = re.compile('(https?:)?//twitter\.com/')
 
+
 def clean_article_html(html_string):
 
     c = Cleaner(
@@ -45,7 +46,9 @@ def _wrap_tag(element, wrapper):
 
 def preprocess_media_tags(element):
     if isinstance(element, html.HtmlElement):
-        if element.tag == 'iframe':
+        if element.tag == 'figcaption':
+            [e.drop_tag() for e in element.findall('*')]
+        elif element.tag == 'iframe':
             iframe_src = element.get('src')
             youtube = youtube_re.match(iframe_src)
             vimeo = vimeo_re.match(iframe_src)
@@ -57,7 +60,7 @@ def preprocess_media_tags(element):
                     element.set('src', '/embed/vimeo?url=' + quote_plus('https://vimeo.com/' + vimeo.group(2)))
 
                 element = _wrap_tag(element, 'figure')
-        elif element.tag == 'blockquote' and 'twitter-tweet' in element.get('class'):
+        elif element.tag == 'blockquote' and element.get('class') == 'twitter-tweet':
             twitter_link = element.cssselect('a')
             if len(twitter_link) and twitter_re.match(twitter_link[0].get('href')):
                 twitter_frame = html.HtmlElement()
@@ -66,6 +69,22 @@ def preprocess_media_tags(element):
                 element = _wrap_tag(twitter_frame, 'figure')
 
     return element
+
+
+def preprocess_fragments(fragments):
+    processed_fragments = []
+    for fragment in fragments:
+        # figure should be on the top level
+        if not isinstance(fragment, html.HtmlElement):
+            processed_fragments.append(fragment)
+        elif fragment.find('figure') is not None:
+            f = fragment.find('figure')
+            processed_fragments.append(f)
+            fragment.remove(f)
+            processed_fragments.append(fragment)
+        else:
+            processed_fragments.append(fragment)
+    return processed_fragments
 
 
 def _recursive_convert(element):
@@ -102,7 +121,9 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
     if clean_html:
         html_string = clean_article_html(html_string)
 
-    fragments = html.fragments_fromstring(html_string)
+    fragments = preprocess_fragments(
+        html.fragments_fromstring(html_string)
+    )
     content = []
 
     for fragment in fragments:
