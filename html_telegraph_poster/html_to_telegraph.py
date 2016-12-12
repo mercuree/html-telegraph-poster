@@ -13,6 +13,9 @@ default_user_agent = 'Python_telegraph_poster/0.1'
 allowed_tags = ['a', 'aside', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong']
 allowed_top_level_tags = ['aside', 'blockquote', 'h3', 'h4', 'p', 'figure']
 
+youtube_re = re.compile('(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/')
+vimeo_re = re.compile('(https?:)?//player\.vimeo\.com/video/(\d+)')
+twitter_re = re.compile('(https?:)?//twitter\.com/')
 
 def clean_article_html(html_string):
 
@@ -33,24 +36,41 @@ def clean_article_html(html_string):
     return html_string
 
 
-def preprocess_tags(element):
-    if isinstance(element, html.HtmlElement) and element.tag in ['iframe']:
-        iframe_src = element.get('src')
-        youtube = re.match('(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/', iframe_src)
-        if youtube:
-            yt_id = urlparse(iframe_src).path.replace('/embed/', '')
-            element.set('src', '/embed/youtube?url=' + quote_plus('https://www.youtube.com/watch?v=' + yt_id))
-            new_element = html.HtmlElement()
-            new_element.tag = 'figure'
-            new_element.append(element)
-            element = new_element
+def _wrap_tag(element, wrapper):
+    new_element = html.HtmlElement()
+    new_element.tag = wrapper
+    new_element.append(element)
+    return new_element
+
+
+def preprocess_media_tags(element):
+    if isinstance(element, html.HtmlElement):
+        if element.tag == 'iframe':
+            iframe_src = element.get('src')
+            youtube = youtube_re.match(iframe_src)
+            vimeo = vimeo_re.match(iframe_src)
+            if youtube or vimeo:
+                if youtube:
+                    yt_id = urlparse(iframe_src).path.replace('/embed/', '')
+                    element.set('src', '/embed/youtube?url=' + quote_plus('https://www.youtube.com/watch?v=' + yt_id))
+                elif vimeo:
+                    element.set('src', '/embed/vimeo?url=' + quote_plus('https://vimeo.com/' + vimeo.group(2)))
+
+                element = _wrap_tag(element, 'figure')
+        elif element.tag == 'blockquote' and 'twitter-tweet' in element.get('class'):
+            twitter_link = element.cssselect('a')
+            if len(twitter_link) and twitter_re.match(twitter_link[0].get('href')):
+                twitter_frame = html.HtmlElement()
+                twitter_frame.tag = 'iframe'
+                twitter_frame.set('src', '/embed/twitter?url=' + quote_plus(twitter_link[0].get('href')))
+                element = _wrap_tag(twitter_frame, 'figure')
 
     return element
 
 
 def _recursive_convert(element):
 
-    element = preprocess_tags(element)
+    element = preprocess_media_tags(element)
     fragment_root_element = {
         '_': element.tag
     }
