@@ -98,7 +98,7 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
             paragraph.append(fragment)
             content.append(_recursive_convert(paragraph))
         # convert and append text nodes after closing tag
-        if fragment.tail:
+        if fragment.tail and len(fragment.tail.strip()) != 0:
             content.append(
                 _recursive_convert(html.fromstring('<p>%s</p>' % fragment.tail))
             )
