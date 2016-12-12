@@ -36,7 +36,7 @@ def clean_article_html(html_string):
 def preprocess_tags(element):
     if isinstance(element, html.HtmlElement) and element.tag in ['iframe']:
         iframe_src = element.get('src')
-        youtube = re.match('https?://(www\.)?youtube(-nocookie)?\.com/embed/', iframe_src)
+        youtube = re.match('(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/', iframe_src)
         if youtube:
             yt_id = urlparse(iframe_src).path.replace('/embed/', '')
             element.set('src', '/embed/youtube?url=' + quote_plus('https://www.youtube.com/watch?v=' + yt_id))
