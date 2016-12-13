@@ -20,6 +20,10 @@ twitter_re = re.compile('(https?:)?//twitter\.com/')
 
 def clean_article_html(html_string):
 
+    html_string = html_string.replace('<h1', '<h3').replace('</h1>', '</h3>')
+    html_string = re.sub(r'<(/?)b(?=\s|>)', r'<\1strong', html_string)
+    html_string = re.sub(r'<(/?)(h2|h5|h6)', r'<\1h4', html_string)
+
     c = Cleaner(
         allow_tags=allowed_tags,
         style=True,
