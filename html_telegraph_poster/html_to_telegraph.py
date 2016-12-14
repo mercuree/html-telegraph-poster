@@ -78,16 +78,15 @@ def preprocess_media_tags(element):
 def preprocess_fragments(fragments):
     processed_fragments = []
     for fragment in fragments:
+
         # figure should be on the top level
-        if not isinstance(fragment, html.HtmlElement):
-            processed_fragments.append(fragment)
-        elif fragment.find('figure') is not None:
+        if isinstance(fragment, html.HtmlElement) and fragment.find('figure') is not None:
             f = fragment.find('figure')
             processed_fragments.append(f)
             fragment.remove(f)
-            processed_fragments.append(fragment)
-        else:
-            processed_fragments.append(fragment)
+
+        processed_fragments.append(fragment)
+
     return processed_fragments
 
 
