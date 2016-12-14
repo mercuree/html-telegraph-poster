@@ -38,7 +38,7 @@ def clean_article_html(html_string):
     cleaned = cleaned[5:-6]
     # remove all line breaks and empty strings
     html_string = re.sub('(^[\s\t]*)?\r?\n', '', cleaned, flags=re.MULTILINE)
-    return html_string
+    return html_string.strip()
 
 
 def _wrap_tag(element, wrapper):
@@ -135,18 +135,19 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
         if not isinstance(fragment, html.HtmlElement):
             fragment = html.fromstring('<p>%s</p>' % fragment)
 
-        if fragment.tag in allowed_top_level_tags:
-            content.append(_recursive_convert(fragment))
-        else:
+        if fragment.tag not in allowed_top_level_tags:
             paragraph = html.HtmlElement()
             paragraph.tag = 'p'
             paragraph.append(fragment)
             content.append(_recursive_convert(paragraph))
-        # convert and append text nodes after closing tag
-        if fragment.tail and len(fragment.tail.strip()) != 0:
-            content.append(
-                _recursive_convert(html.fromstring('<p>%s</p>' % fragment.tail))
-            )
+        else:
+            content.append(_recursive_convert(fragment))
+
+            # convert and append text nodes after closing tag
+            if fragment.tail and len(fragment.tail.strip()) != 0:
+                content.append(
+                    _recursive_convert(html.fromstring('<p>%s</p>' % fragment.tail))
+                )
 
     return json.dumps(content, ensure_ascii=False)
 
