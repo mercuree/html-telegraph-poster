@@ -38,6 +38,9 @@ def clean_article_html(html_string):
     cleaned = cleaned[5:-6]
     # remove all line breaks and empty strings
     html_string = re.sub('(^[\s\t]*)?\r?\n', '', cleaned, flags=re.MULTILINE)
+    # replace multiple br tags with one
+    html_string = re.sub(r'(<br\s*/?>\s*){2,}', '<br/>', html_string)
+
     return html_string.strip()
 
 
