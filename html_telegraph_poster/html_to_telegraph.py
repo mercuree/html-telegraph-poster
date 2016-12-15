@@ -97,27 +97,27 @@ def _recursive_convert(element):
 
     element = preprocess_media_tags(element)
     fragment_root_element = {
-        '_': element.tag
+        'tag': element.tag
     }
 
     content = []
     if element.text:
-        content.append({'t': element.text})
+        content.append(element.text)
 
     if element.attrib:
         fragment_root_element.update({
-            'a': dict(element.attrib)
+            'attrs': dict(element.attrib)
         })
 
     for child in element:
         content.append(_recursive_convert(child))
         # Append Text node after element, if exists
         if child.tail:
-            content.append({'t': child.tail})
+            content.append(child.tail)
 
     if len(content):
         fragment_root_element.update({
-            'c': content
+            'children': content
         })
 
     return fragment_root_element

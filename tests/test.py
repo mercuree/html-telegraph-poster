@@ -41,9 +41,9 @@ class TelegraphConversionTest(unittest.TestCase):
         '''
         self.assertEqual(
             [
-                {"c": [{"t": "text as first child node    "}], "_": "p"},
-                {"c": [{"t": " Text Header "}], "_": "h3"},
-                {"c": [{"t": " Text Para"}], "_": "p"}
+                {"children": ["text as first child node    "], "tag": "p"},
+                {"children": [" Text Header "], "tag": "h3"},
+                {"children": [" Text Para"], "tag": "p"}
              ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
@@ -56,15 +56,15 @@ class TelegraphConversionTest(unittest.TestCase):
         html_text_before = 'text node before <em> Em text </em>'
 
         self.assertEqual(
-            [{"c": [{"_": "em", "c": [{"t": " Em text "}]}], "_": "p"}],
+            [{"children": [{"tag": "em", "children": [" Em text "]}], "tag": "p"}],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
         self.assertEqual(
-            [{"c": [{"_": "em", "c": [{"t": " Em text "}]}, {"t": "Text node after"}], "_": "p"}],
+            [{"children": [{"tag": "em", "children": [" Em text "]}, "Text node after"], "tag": "p"}],
             json_loads_byteified(convert_html_to_telegraph_format(html_text_after, clean_html=True))
         )
         self.assertEqual(
-            [{'c': [{'t': 'text node before '}], '_': 'p'}, {"c": [{"_": "em", "c": [{"t": " Em text "}]}], "_": "p"}],
+            [{'children': ["text node before "], "tag": "p"}, {"children": [{"tag": "em", "children": [" Em text "]}], "tag": "p"}],
             json_loads_byteified(convert_html_to_telegraph_format(html_text_before, clean_html=True))
         )
 
@@ -76,7 +76,7 @@ class TelegraphConversionTest(unittest.TestCase):
         '''
         self.assertEqual(
             [
-                {"c": [{"_": "em", "c": [{"t": " Em text "}]}], "_": "p"}
+                {"children": [{"tag": "em", "children": [" Em text "]}], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
@@ -89,7 +89,7 @@ class TelegraphConversionTest(unittest.TestCase):
         '''
         self.assertEqual(
             [
-                {"c": [{"_": "em", "c": [{"t": " Em text "}]}, {'t': ' Some text node after div'}], "_": "p"}
+                {"children": [{"tag": "em", "children": [" Em text "]}, ' Some text node after div'], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
@@ -103,12 +103,12 @@ class TelegraphConversionTest(unittest.TestCase):
                '<h6> h6 header (h4) </h6>'
         self.assertEqual(
             [
-                {"c": [{"t": " H1 header (h3) "}], "_": "h3"},
-                {"c": [{"t": " H2 header (h4) "}], "_": "h4"},
-                {"c": [{"t": " h3 header "}], "_": "h3"},
-                {"c": [{"t": " h4 header "}], "_": "h4"},
-                {"c": [{"t": " h5 header (h4) "}], "_": "h4"},
-                {"c": [{"t": " h6 header (h4) "}], "_": "h4"}
+                {"children": [" H1 header (h3) "], "tag": "h3"},
+                {"children": [" H2 header (h4) "], "tag": "h4"},
+                {"children": [" h3 header "], "tag": "h3"},
+                {"children": [" h4 header "], "tag": "h4"},
+                {"children": [" h5 header (h4) "], "tag": "h4"},
+                {"children": [" h6 header (h4) "], "tag": "h4"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
@@ -117,8 +117,8 @@ class TelegraphConversionTest(unittest.TestCase):
         html = '<h3> H3 header</h3> text after h3 header'
         self.assertEqual(
             [
-                {"c": [{"t": " H3 header"}], "_": "h3"},
-                {"c": [{"t": " text after h3 header"}], "_": "p"}
+                {"children": [" H3 header"], "tag": "h3"},
+                {"children": [" text after h3 header"], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
@@ -127,8 +127,8 @@ class TelegraphConversionTest(unittest.TestCase):
         html = '<h3> H3 header</h3> text after h3 header<br/> and new line'
         self.assertEqual(
             [
-                {"c": [{"t": " H3 header"}], "_": "h3"},
-                {"c": [{"t": " text after h3 header\nand new line"}], "_": "p"}
+                {"children": [" H3 header"], "tag": "h3"},
+                {"children": [" text after h3 header\nand new line"], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
@@ -140,30 +140,30 @@ class TelegraphConversionTest(unittest.TestCase):
         html_joined = html_with_text_before + html_with_text_after
         self.assertEqual(
             [
-                {"c": [{"a": {"src": "image.jpg", "title": "image"}, "_": "img"}], "_": "p"}
+                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
 
         self.assertEqual(
             [
-                {"c": [{"a": {"src": "image.jpg", "title": "image"}, "_": "img"}, {'t': ' Text after'}], "_": "p"}
+                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}, ' Text after'], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html_with_text_after, clean_html=True))
         )
 
         self.assertEqual(
             [
-                {"c": [{"t": "Text before "}], "_": "p"},
-                {"c": [{"a": {"src": "image.jpg", "title": "image"}, "_": "img"}], "_": "p"}
+                {"children": ["Text before "], "tag": "p"},
+                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html_with_text_before, clean_html=True))
         )
         self.assertEqual(
             [
-                {"c": [{"t": "Text before "}], "_": "p"},
-                {"c": [{"a": {"src": "image.jpg", "title": "image"}, "_": "img"}], "_": "p"},
-                {"c": [{"a": {"src": "image.jpg", "title": "image"}, "_": "img"}, {"t": " Text after"}], "_": "p"}
+                {"children": ["Text before "], "tag": "p"},
+                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}], "tag": "p"},
+                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}, " Text after"], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html_joined, clean_html=True))
         )
@@ -173,15 +173,15 @@ class TelegraphConversionTest(unittest.TestCase):
         html_figure_inside_with_img = '<div><figure>Some figure content <img src="image.png"/></figure></div>'
         self.assertEqual(
             [
-                {"c": [{"t": "Some figure content"}], "_": "figure"},
-                {"c": [{"t": "paragraph text"}], "_": "p"}
+                {"children": ["Some figure content"], "tag": "figure"},
+                {"children": ["paragraph text"], "tag": "p"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html_figure_inside, clean_html=True))
         )
 
         self.assertEqual(
             [
-                {"c": [{"t": "Some figure content "}, {"a": {"src": "image.png"}, "_": "img"}], "_": "figure"}
+                {"children": ["Some figure content ", {"attrs": {"src": "image.png"}, "tag": "img"}], "tag": "figure"}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html_figure_inside_with_img, clean_html=True))
         )
@@ -193,12 +193,12 @@ class TelegraphConversionTest(unittest.TestCase):
         html2 = '<br><br /> <br clear="someoldattribute">  <div>' \
                '</div> <br/> text <br>'
         self.assertEqual(
-            [{'_': 'p', 'c': [{'t': 'text'}]}],
+            [{'tag': 'p', 'children': ['text']}],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
         self.assertEqual(
             [
-                {'c': [{'t': '\ntext \n'}], '_': 'p'}
+                {'children': ['\ntext \n'], 'tag': 'p'}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html2, clean_html=True))
         )
