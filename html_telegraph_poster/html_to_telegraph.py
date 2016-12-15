@@ -36,12 +36,12 @@ def clean_article_html(html_string):
     cleaned = c.clean_html(html_string)
     # remove wrapped div
     cleaned = cleaned[5:-6]
-    # remove all line breaks and empty strings
+    # remove all line breaks and empty strings (in html it means nothing)
     html_string = re.sub('(^[\s\t]*)?\r?\n', '', cleaned, flags=re.MULTILINE)
-    # replace multiple br tags with one
-    html_string = re.sub(r'(<br\s*/?>\s*){2,}', '<br/>', html_string)
+    # but replace multiple br tags with one line break, telegraph will convert it to <br class="inline">
+    html_string = re.sub(r'(<br(/?>|\s[^<>]*>)\s*)+', '\n', html_string)
 
-    return html_string.strip()
+    return html_string.strip(' \t')
 
 
 def _wrap_tag(element, wrapper):
