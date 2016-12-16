@@ -55,7 +55,7 @@ def preprocess_media_tags(element):
     if isinstance(element, html.HtmlElement):
         if element.tag == 'figcaption':
             [e.drop_tag() for e in element.findall('*')]
-        elif element.tag == 'iframe':
+        elif element.tag == 'iframe' and element.get('src'):
             iframe_src = element.get('src')
             youtube = youtube_re.match(iframe_src)
             vimeo = vimeo_re.match(iframe_src)
