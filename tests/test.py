@@ -202,3 +202,47 @@ class TelegraphConversionTest(unittest.TestCase):
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html2, clean_html=True))
         )
+
+    def test_iframe(self):
+        # multiple br tags should be replaced with one line break
+        html = '<iframe src="//www.youtube.com/embed/abcdef"></iframe>'
+        iframe_empty_src = '<iframe src=""></iframe>'
+        iframe_no_src = '<iframe></iframe>'
+        iframe_child_no_src = '<p><iframe></iframe></p>'
+        iframe_text_before = 'text before <iframe></iframe>'
+        mix = iframe_child_no_src + html + iframe_empty_src + iframe_no_src
+        self.assertEqual(
+            [
+                {'tag': 'p', 'children': [{'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
+                'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}]}
+             ],
+            json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
+        )
+        self.assertEqual(
+            [],
+            json_loads_byteified(convert_html_to_telegraph_format(iframe_empty_src, clean_html=True))
+        )
+        self.assertEqual(
+            [],
+            json_loads_byteified(convert_html_to_telegraph_format(iframe_no_src, clean_html=True))
+        )
+        self.assertEqual(
+            [{'tag': 'p'}],
+            json_loads_byteified(convert_html_to_telegraph_format(iframe_child_no_src, clean_html=True))
+        )
+
+        self.assertEqual(
+            [
+                {'tag': 'p'},
+                {'tag': 'p', 'children': [{'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
+                    'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}]}
+            ],
+            json_loads_byteified(convert_html_to_telegraph_format(mix, clean_html=True))
+        )
+
+        self.assertEqual(
+            [
+                {'children': ['text before '], 'tag': 'p'}
+            ],
+            json_loads_byteified(convert_html_to_telegraph_format(iframe_text_before, clean_html=True))
+        )

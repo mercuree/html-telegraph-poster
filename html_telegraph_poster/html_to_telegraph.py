@@ -80,10 +80,26 @@ def preprocess_media_tags(element):
 
 def preprocess_fragments(fragments):
     processed_fragments = []
-    for fragment in fragments:
 
+    if not len(fragments):
+        return processed_fragments
+
+    # convert and append text node before starting tag
+    if not isinstance(fragments[0], html.HtmlElement):
+        processed_fragments.append(html.fromstring('<p>%s</p>' % fragments[0]))
+        fragments.pop(0)
+        if not len(fragments):
+            return processed_fragments
+
+    bad_iframes = fragments[-1].xpath('//iframe[not(@src) or @src=""]')
+    for bad_iframe in bad_iframes:
+        bad_iframe.drop_tag()
+        if bad_iframe in fragments:
+            fragments.remove(bad_iframe)
+
+    for fragment in fragments:
         # figure should be on the top level
-        if isinstance(fragment, html.HtmlElement) and fragment.find('figure') is not None:
+        if fragment.find('figure') is not None:
             f = fragment.find('figure')
             processed_fragments.append(f)
             fragment.remove(f)
@@ -133,9 +149,6 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
     content = []
 
     for fragment in fragments:
-        # convert and append text nodes before starting tag
-        if not isinstance(fragment, html.HtmlElement):
-            fragment = html.fromstring('<p>%s</p>' % fragment)
 
         if fragment.tag not in allowed_top_level_tags:
             paragraph = html.HtmlElement()
