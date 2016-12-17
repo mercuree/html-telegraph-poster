@@ -246,3 +246,18 @@ class TelegraphConversionTest(unittest.TestCase):
             ],
             json_loads_byteified(convert_html_to_telegraph_format(iframe_text_before, clean_html=True))
         )
+
+    def test_twitter_links(self):
+        html = '''
+        <blockquote class="twitter-tweet"><p>
+        <a href="https://twitter.com/JoshConstine">@JoshConstine</a>
+        <a href="https://twitter.com/TechCrunch">@TechCrunch</a> The distribution of games
+        <a href="https://twitter.com/durov/status/803680844200210432"></a></blockquote>
+        '''
+        self.assertEqual(
+            [
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
+                    'src': '/embed/twitter?url=https%3A%2F%2Ftwitter.com%2Fdurov%2Fstatus%2F803680844200210432'}}]}
+            ],
+            json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
+        )

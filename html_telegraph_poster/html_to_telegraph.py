@@ -13,9 +13,9 @@ default_user_agent = 'Python_telegraph_poster/0.1'
 allowed_tags = ['a', 'aside', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong']
 allowed_top_level_tags = ['aside', 'blockquote', 'h3', 'h4', 'p', 'figure']
 
-youtube_re = re.compile('(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/')
-vimeo_re = re.compile('(https?:)?//player\.vimeo\.com/video/(\d+)')
-twitter_re = re.compile('(https?:)?//twitter\.com/')
+youtube_re = re.compile(r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/')
+vimeo_re = re.compile(r'(https?:)?//player\.vimeo\.com/video/(\d+)')
+twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
 
 
 def clean_article_html(html_string):
@@ -68,12 +68,13 @@ def preprocess_media_tags(element):
 
                 element = _wrap_tag(element, 'figure')
         elif element.tag == 'blockquote' and element.get('class') == 'twitter-tweet':
-            twitter_link = element.cssselect('a')
-            if len(twitter_link) and twitter_re.match(twitter_link[0].get('href')):
-                twitter_frame = html.HtmlElement()
-                twitter_frame.tag = 'iframe'
-                twitter_frame.set('src', '/embed/twitter?url=' + quote_plus(twitter_link[0].get('href')))
-                element = _wrap_tag(twitter_frame, 'figure')
+            twitter_links = element.cssselect('a')
+            for tw_link in twitter_links:
+                if twitter_re.match(tw_link.get('href')):
+                    twitter_frame = html.HtmlElement()
+                    twitter_frame.tag = 'iframe'
+                    twitter_frame.set('src', '/embed/twitter?url=' + quote_plus(tw_link.get('href')))
+                    element = _wrap_tag(twitter_frame, 'figure')
 
     return element
 
