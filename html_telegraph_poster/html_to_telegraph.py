@@ -10,8 +10,9 @@ from requests_toolbelt import MultipartEncoder
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 default_user_agent = 'Python_telegraph_poster/0.1'
-allowed_tags = ['a', 'aside', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'iframe', 'img', 'p', 'strong']
-allowed_top_level_tags = ['aside', 'blockquote', 'h3', 'h4', 'p', 'figure']
+allowed_tags = ['a', 'aside', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'iframe', 'img', 'li', 'ol',
+                'p', 'strong', 'ul']
+allowed_top_level_tags = ['aside', 'blockquote', 'figure', 'h3', 'h4', 'ol', 'p', 'ul']
 
 youtube_re = re.compile(r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/')
 vimeo_re = re.compile(r'(https?:)?//player\.vimeo\.com/video/(\d+)')
