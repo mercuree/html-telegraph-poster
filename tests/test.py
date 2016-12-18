@@ -227,13 +227,12 @@ class TelegraphConversionTest(unittest.TestCase):
             json_loads_byteified(convert_html_to_telegraph_format(iframe_no_src, clean_html=True))
         )
         self.assertEqual(
-            [{'tag': 'p'}],
+            [],
             json_loads_byteified(convert_html_to_telegraph_format(iframe_child_no_src, clean_html=True))
         )
 
         self.assertEqual(
             [
-                {'tag': 'p'},
                 {'tag': 'p', 'children': [{'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
                     'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}]}
             ],
@@ -273,10 +272,31 @@ class TelegraphConversionTest(unittest.TestCase):
             <li>second</li>
         </ol>
         '''
+        empty_list = '''
+        <ul>
+            <li></li>
+            <li>second</li>
+        </ul>
+        <ul><li></li>
+        </ul>
+        <ol></ol>
+        <ol>
+            <li>first</li>
+            <li>    </li>
+        </ol>
+        '''
+
         self.assertEqual(
             [
                 {'tag': 'ul', 'children': [{'tag': 'li', 'children': ['abc']}, {'tag': 'li', 'children': ['def']}]},
                 {'tag': 'ol', 'children': [{'tag': 'li', 'children': ['first']}, {'tag': 'li', 'children': ['second']}]}
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
+        )
+        self.assertEqual(
+            [
+                {'tag': 'ul', 'children': [{'tag': 'li', 'children': ['second']}]},
+                {'tag': 'ol', 'children': [{'tag': 'li', 'children': ['first']}]}
+            ],
+            json_loads_byteified(convert_html_to_telegraph_format(empty_list, clean_html=True))
         )

@@ -55,6 +55,7 @@ def _wrap_tag(element, wrapper):
 def preprocess_media_tags(element):
     if isinstance(element, html.HtmlElement):
         if element.tag == 'figcaption':
+            # figcaption may have only text content
             [e.drop_tag() for e in element.findall('*')]
         elif element.tag in ['ol', 'ul']:
             # ignore any spaces between <ul> and <li>
@@ -88,22 +89,18 @@ def preprocess_media_tags(element):
 
 def preprocess_fragments(fragments):
     processed_fragments = []
+    bad_tags = []
 
     if not len(fragments):
         return processed_fragments
 
     # convert and append text node before starting tag
     if not isinstance(fragments[0], html.HtmlElement):
-        processed_fragments.append(html.fromstring('<p>%s</p>' % fragments[0]))
+        if len(fragments[0].strip()) > 0:
+            processed_fragments.append(html.fromstring('<p>%s</p>' % fragments[0]))
         fragments.pop(0)
         if not len(fragments):
             return processed_fragments
-
-    bad_iframes = fragments[-1].xpath('//iframe[not(@src) or @src=""]')
-    for bad_iframe in bad_iframes:
-        bad_iframe.drop_tag()
-        if bad_iframe in fragments:
-            fragments.remove(bad_iframe)
 
     for fragment in fragments:
         # figure should be on the top level
@@ -113,6 +110,19 @@ def preprocess_fragments(fragments):
             fragment.remove(f)
 
         processed_fragments.append(fragment)
+
+    # bad iframes
+    bad_tags.extend(fragments[-1].xpath('//iframe[not(@src) or @src=""]'))
+    # bad lists (remove lists/list items if empty)
+    nodes_not_to_be_empty = fragments[-1].xpath('//ul|//ol|//li|//p')
+    bad_tags.extend([x for x in nodes_not_to_be_empty if len(x.text_content().strip()) == 0])
+
+    for bad_tag in bad_tags:
+        bad_tag.drop_tag()
+        if bad_tag in fragments:
+            fragments.remove(bad_tag)
+        if bad_tag in processed_fragments:
+            processed_fragments.remove(bad_tag)
 
     return processed_fragments
 
