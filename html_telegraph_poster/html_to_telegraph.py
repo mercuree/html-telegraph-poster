@@ -56,6 +56,12 @@ def preprocess_media_tags(element):
     if isinstance(element, html.HtmlElement):
         if element.tag == 'figcaption':
             [e.drop_tag() for e in element.findall('*')]
+        elif element.tag in ['ol', 'ul']:
+            # ignore any spaces between <ul> and <li>
+            element.text = ''
+        elif element.tag == 'li':
+            # ignore spaces after </li>
+            element.tail = ''
         elif element.tag == 'iframe' and element.get('src'):
             iframe_src = element.get('src')
             youtube = youtube_re.match(iframe_src)

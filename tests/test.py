@@ -261,3 +261,22 @@ class TelegraphConversionTest(unittest.TestCase):
             ],
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
+
+    def test_lists(self):
+        html = '''
+        <ul>
+            <li>abc</li>
+            <li>def</li>
+        </ul>
+        <ol>
+            <li>first</li>
+            <li>second</li>
+        </ol>
+        '''
+        self.assertEqual(
+            [
+                {'tag': 'ul', 'children': [{'tag': 'li', 'children': ['abc']}, {'tag': 'li', 'children': ['def']}]},
+                {'tag': 'ol', 'children': [{'tag': 'li', 'children': ['first']}, {'tag': 'li', 'children': ['second']}]}
+            ],
+            json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
+        )
