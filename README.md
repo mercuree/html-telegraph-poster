@@ -1,3 +1,7 @@
+# UPDATE 20.12.2016
+Telegram [released](https://telegram.org/blog/telegraph) [telegra.ph api](http://telegra.ph/api).
+This library doesn't support it, however it still works and can handle your pure html for posting.
+
 # Python html to telegra.ph poster
 
 Simple python function to post plain html text to https://telegra.ph/.
