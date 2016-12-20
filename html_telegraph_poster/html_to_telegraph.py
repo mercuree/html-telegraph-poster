@@ -10,9 +10,9 @@ from requests_toolbelt import MultipartEncoder
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 default_user_agent = 'Python_telegraph_poster/0.1'
-allowed_tags = ['a', 'aside', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'iframe', 'img', 'li', 'ol',
-                'p', 'strong', 'ul']
-allowed_top_level_tags = ['aside', 'blockquote', 'figure', 'h3', 'h4', 'ol', 'p', 'ul']
+allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i', 'iframe',
+                'img', 'li', 'ol', 'p', 's', 'strong', 'u', 'ul', 'video']
+allowed_top_level_tags = ['aside', 'blockquote', 'figure', 'h3', 'h4', 'hr', 'ol', 'p', 'ul']
 
 youtube_re = re.compile(r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/')
 vimeo_re = re.compile(r'(https?:)?//player\.vimeo\.com/video/(\d+)')
@@ -22,6 +22,7 @@ twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/st
 def clean_article_html(html_string):
 
     html_string = html_string.replace('<h1', '<h3').replace('</h1>', '</h3>')
+    # telegram will convert <b> anyway
     html_string = re.sub(r'<(/?)b(?=\s|>)', r'<\1strong', html_string)
     html_string = re.sub(r'<(/?)(h2|h5|h6)', r'<\1h4', html_string)
 
