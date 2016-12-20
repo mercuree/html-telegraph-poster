@@ -1,7 +1,7 @@
 import mimetypes
 import re
 import requests
-from html_to_telegraph import default_user_agent
+from html_telegraph_poster.html_to_telegraph import default_user_agent
 
 from io import BytesIO
 base_url = 'https://telegra.ph'
