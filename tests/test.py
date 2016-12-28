@@ -133,6 +133,36 @@ class TelegraphConversionTest(unittest.TestCase):
             json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
         )
 
+    def test_image_inside_paragraph(self):
+        html = '<p> <img src="image0.jpg"/></p>' \
+               '<p>  <span> <img src="image1.jpg"/>   </span> <img src="image2.jpg"/> </p>'
+
+        para_with_text = '<p>  <span> <img src="image1.jpg"/>abc </span> </p>'
+        para_with_figure = '<p> <figure> <img src="image0.jpg"/> <figcaption>test</figcaption></figure> </p>'
+
+        self.assertEqual(
+            [
+                {"children": [{"attrs": {"src": "image0.jpg"}, "tag": "img"}], "tag": "figure"},
+                {"children": [{"attrs": {"src": "image1.jpg"}, "tag": "img"}], "tag": "figure"},
+                {"children": [{"attrs": {"src": "image2.jpg"}, "tag": "img"}], "tag": "figure"}
+            ],
+            json_loads_byteified(convert_html_to_telegraph_format(html, clean_html=True))
+        )
+        self.assertEqual(
+            [
+                {'tag': 'p', 'children': ['   ', {'tag': 'img', 'attrs': {'src': 'image1.jpg'}}, 'abc  ']}
+            ],
+            json_loads_byteified(convert_html_to_telegraph_format(para_with_text, clean_html=True))
+        )
+        self.assertEqual(
+            [
+                {'tag': 'figure', 'children': [' ', {'tag': 'img', 'attrs': {'src': 'image0.jpg'}}, ' ',
+                                                {'tag': 'figcaption', 'children': ['test']}]}
+            ],
+            json_loads_byteified(convert_html_to_telegraph_format(para_with_figure, clean_html=True))
+        )
+
+
     def test_image_tag_at_the_top(self):
         html = '<img src="image.jpg" title="image"/>'
         html_with_text_after = '<img src="image.jpg" title="image"/> Text after'
