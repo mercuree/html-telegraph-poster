@@ -6,6 +6,7 @@ from lxml.html.clean import Cleaner
 import requests
 from requests.compat import urlparse, quote_plus
 from requests_toolbelt import MultipartEncoder
+from .errors import *
 
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
@@ -195,9 +196,9 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
 def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent):
 
     if not title:
-        raise Exception('Title is required')
+        raise TitleRequiredError('Title is required')
     if not text:
-        raise Exception('Text is required')
+        raise TextRequiredError('Text is required')
 
     content = convert_html_to_telegraph_format(text)
     cookies = dict(tph_uuid=tph_uuid) if tph_uuid and page_id else None
@@ -227,8 +228,8 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
         result['url'] = base_url + '/' + result['path']
         return result
     else:
-        error_msg = 'Telegraph error msg: ' + result['error'] if 'error' in result else ''
-        raise Exception(error_msg)
+        error_msg = result['error'] if 'error' in result else ''
+        raise TelegraphError(error_msg)
 
 
 class TelegraphPoster(object):
