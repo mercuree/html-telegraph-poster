@@ -111,12 +111,6 @@ def preprocess_fragments(fragments):
             processed_fragments.append(f)
             fragment.remove(f)
 
-        images_to_wrap = fragment.xpath('.//self::p[not(normalize-space(string()))]//img')
-        if len(images_to_wrap):
-            for image in images_to_wrap:
-                image.tail = ''
-                processed_fragments.append(_wrap_tag(image, 'figure'))
-
         processed_fragments.append(fragment)
     # bad iframes
     bad_tags.extend(fragments[-1].xpath('//iframe[not(@src) or @src=""]'))
