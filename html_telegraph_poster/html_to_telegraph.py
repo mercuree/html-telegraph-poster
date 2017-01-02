@@ -186,14 +186,15 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
     return json.dumps(content, ensure_ascii=False)
 
 
-def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent):
+def _upload(title, author, text,
+            author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent, convert_html=True):
 
     if not title:
         raise TitleRequiredError('Title is required')
     if not text:
         raise TextRequiredError('Text is required')
 
-    content = convert_html_to_telegraph_format(text)
+    content = convert_html_to_telegraph_format(text) if convert_html else text
     cookies = dict(tph_uuid=tph_uuid) if tph_uuid and page_id else None
 
     fields = {
@@ -223,6 +224,10 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
     else:
         error_msg = result['error'] if 'error' in result else ''
         raise TelegraphError(error_msg)
+
+
+def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent):
+    return _upload(title, author, text, author_url, tph_uuid, page_id, user_agent)
 
 
 class TelegraphPoster(object):
