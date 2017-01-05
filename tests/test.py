@@ -1,6 +1,7 @@
 # coding=utf8
 import unittest
 from html_telegraph_poster.html_to_telegraph import convert_html_to_telegraph_format
+from html_telegraph_poster.upload_images import upload_image
 import json
 
 
@@ -330,3 +331,10 @@ class TelegraphConversionTest(unittest.TestCase):
             ],
             json_loads_byteified(convert_html_to_telegraph_format(empty_list, clean_html=True))
         )
+
+
+class UploadImageTest(unittest.TestCase):
+
+    def test_upload(self):
+        telegraph_url = upload_image('http://httpbin.org/image/jpeg')
+        self.assertIn('https://telegra.ph/file/', telegraph_url)

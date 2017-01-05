@@ -2,6 +2,7 @@ import mimetypes
 import re
 import requests
 from html_telegraph_poster.html_to_telegraph import default_user_agent
+from .errors import *
 
 from io import BytesIO
 base_url = 'https://telegra.ph'
@@ -13,13 +14,13 @@ def _check_mimetypes(type):
     return type in ['image/jpeg', 'image/png', 'image/gif', 'video/mp4']
 
 
-def upload_image(file_name_or_url):
+def upload_image(file_name_or_url, user_agent=default_user_agent):
 
     if re.match(r'^https?://', file_name_or_url, flags=re.IGNORECASE):
-        img = requests.get(file_name_or_url, headers={'User-Agent': default_user_agent})
+        img = requests.get(file_name_or_url, headers={'User-Agent': user_agent})
 
         if img.status_code != 200 or 'Content-Type' not in img.headers:
-            raise Exception('Url request failed')
+            raise GetImageRequestError('Url request failed')
 
         img_content_type = img.headers['Content-Type']
         img = BytesIO(img.content)
@@ -30,7 +31,7 @@ def upload_image(file_name_or_url):
 
     # simple filecheck, based on file extension
     if not _check_mimetypes(img_content_type):
-        raise Exception('The "%s" filetype is not supported' % img_content_type)
+        raise FileTypeNotSupported('The "%s" filetype is not supported' % img_content_type)
 
     headers = {
         'X-Requested-With': 'XMLHttpRequest',
@@ -45,9 +46,9 @@ def upload_image(file_name_or_url):
     try:
         json_response = requests.post(upload_file_url, timeout=7, files=files, headers=headers)
     except requests.exceptions.ReadTimeout:
-        raise Exception('Request timeout')
+        raise ImageUploadHTTPError('Request timeout')
 
-    if json_response and json_response.status_code == requests.codes.ok and json_response.content:
+    if json_response.status_code == requests.codes.ok and json_response.content:
         json_response = json_response.json()
         if type(json_response) is list and len(json_response):
             return 'src' in json_response[0] and base_url + json_response[0]['src'] or ''

@@ -13,6 +13,18 @@ class TextRequiredError(Error):
     pass
 
 
+class GetImageRequestError(Error):
+    pass
+
+
+class ImageUploadHTTPError(Error):
+    pass
+
+
+class FileTypeNotSupported(Error):
+    pass
+
+
 class TelegraphUnknownError(Error):
     pass
 
