@@ -22,7 +22,7 @@ def upload_image(file_name_or_url, user_agent=default_user_agent):
         if img.status_code != 200 or 'Content-Type' not in img.headers:
             raise GetImageRequestError('Url request failed')
 
-        img_content_type = img.headers['Content-Type'].split(';')[0]
+        img_content_type = re.split(';|,', img.headers['Content-Type'])[0]
         img = BytesIO(img.content)
 
     else:
