@@ -22,7 +22,7 @@ def upload_image(file_name_or_url, user_agent=default_user_agent):
         if img.status_code != 200 or 'Content-Type' not in img.headers:
             raise GetImageRequestError('Url request failed')
 
-        img_content_type = img.headers['Content-Type']
+        img_content_type = img.headers['Content-Type'].split(';')[0]
         img = BytesIO(img.content)
 
     else:
@@ -37,7 +37,7 @@ def upload_image(file_name_or_url, user_agent=default_user_agent):
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Referer': base_url + '/',
-        'User-Agent': default_user_agent
+        'User-Agent': user_agent
     }
 
     files = {
