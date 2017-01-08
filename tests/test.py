@@ -221,6 +221,8 @@ class TelegraphConversionTest(unittest.TestCase):
         iframe_no_src = '<iframe></iframe>'
         iframe_child_no_src = '<p><iframe></iframe></p>'
         iframe_text_before = 'text before <iframe></iframe>'
+        iframe_not_allowed_src = '<div><iframe src="http://example.com"></iframe></div>'
+        iframe_vimeo = '<iframe src="https://player.vimeo.com/video/1185346"></iframe>'
         mix = iframe_child_no_src + html + iframe_empty_src + iframe_no_src
         self.assertJson(
             [
@@ -255,6 +257,16 @@ class TelegraphConversionTest(unittest.TestCase):
                 {'children': ['text before '], 'tag': 'p'}
             ],
             convert_html_to_telegraph_format(iframe_text_before, clean_html=True)
+        )
+        self.assertJson(
+            [],
+            convert_html_to_telegraph_format(iframe_not_allowed_src, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {u'tag': u'p', u'children': [{u'tag': u'figure', u'children': [{u'tag': u'iframe', u'attrs': {u'src': u'/embed/vimeo?url=https%3A%2F%2Fvimeo.com%2F1185346'}}]}]}
+            ],
+            convert_html_to_telegraph_format(iframe_vimeo, clean_html=True)
         )
 
     def test_twitter_links(self):

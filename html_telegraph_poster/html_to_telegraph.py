@@ -15,8 +15,8 @@ allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'em', 'figcaption', 'figu
                 'img', 'li', 'ol', 'p', 's', 'strong', 'u', 'ul', 'video']
 allowed_top_level_tags = ['aside', 'blockquote', 'figure', 'h3', 'h4', 'hr', 'ol', 'p', 'ul']
 
-youtube_re = re.compile(r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/')
-vimeo_re = re.compile(r'(https?:)?//player\.vimeo\.com/video/(\d+)')
+youtube_re = r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/'
+vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
 
 
@@ -69,8 +69,8 @@ def preprocess_media_tags(element):
             element.tail = ''
         elif element.tag == 'iframe' and element.get('src'):
             iframe_src = element.get('src')
-            youtube = youtube_re.match(iframe_src)
-            vimeo = vimeo_re.match(iframe_src)
+            youtube = re.match(youtube_re, iframe_src)
+            vimeo = re.match(vimeo_re, iframe_src)
             if youtube or vimeo:
                 if youtube:
                     yt_id = urlparse(iframe_src).path.replace('/embed/', '')
@@ -115,7 +115,8 @@ def preprocess_fragments(fragments):
 
         processed_fragments.append(fragment)
     # bad iframes
-    bad_tags.extend(fragments[-1].xpath('//iframe[not(@src) or @src=""]'))
+    ns = {'re': "http://exslt.org/regular-expressions"}
+    bad_tags.extend(fragments[-1].xpath("//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
     # bad lists (remove lists/list items if empty)
     nodes_not_to_be_empty = fragments[-1].xpath('//ul|//ol|//li|//p')
     bad_tags.extend([x for x in nodes_not_to_be_empty if len(x.text_content().strip()) == 0])
