@@ -78,7 +78,7 @@ def preprocess_media_tags(element):
 
                 element = _wrap_tag(element, 'figure')
         elif element.tag == 'blockquote' and element.get('class') == 'twitter-tweet':
-            twitter_links = element.cssselect('a')
+            twitter_links = element.xpath('.//a')
             for tw_link in twitter_links:
                 if twitter_re.match(tw_link.get('href')):
                     twitter_frame = html.HtmlElement()
