@@ -31,7 +31,9 @@ def clean_article_html(html_string):
         allow_tags=allowed_tags,
         style=True,
         remove_unknown_tags=False,
-        embedded=False
+        embedded=False,
+        safe_attrs_only=True,
+        safe_attrs=('src', 'href', 'class')
     )
     # wrap with div to be sure it is there
     # (otherwise lxml will add parent element in some cases

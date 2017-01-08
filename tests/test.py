@@ -151,14 +151,14 @@ class TelegraphConversionTest(unittest.TestCase):
         html_joined = html_with_text_before + html_with_text_after
         self.assertJson(
             [
-                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}], "tag": "p"}
+                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"}
             ],
             convert_html_to_telegraph_format(html, clean_html=True)
         )
 
         self.assertJson(
             [
-                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}, ' Text after'], "tag": "p"}
+                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}, ' Text after'], "tag": "p"}
             ],
             convert_html_to_telegraph_format(html_with_text_after, clean_html=True)
         )
@@ -166,15 +166,15 @@ class TelegraphConversionTest(unittest.TestCase):
         self.assertJson(
             [
                 {"children": ["Text before "], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}], "tag": "p"}
+                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"}
             ],
             convert_html_to_telegraph_format(html_with_text_before, clean_html=True)
         )
         self.assertJson(
             [
                 {"children": ["Text before "], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg", "title": "image"}, "tag": "img"}, " Text after"], "tag": "p"}
+                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"},
+                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}, " Text after"], "tag": "p"}
             ],
             convert_html_to_telegraph_format(html_joined, clean_html=True)
         )
@@ -261,7 +261,7 @@ class TelegraphConversionTest(unittest.TestCase):
         html = '''
         <blockquote class="twitter-tweet"><p>
         <a href="https://twitter.com/JoshConstine">@JoshConstine</a>
-        <a href="https://twitter.com/TechCrunch">@TechCrunch</a> The distribution of games
+        <a href="https://twitter.com/TechCrunch">@TechCrunch</a> The distribution of games</p>
         <a href="https://twitter.com/durov/status/803680844200210432"></a></blockquote>
         '''
         self.assertJson(
