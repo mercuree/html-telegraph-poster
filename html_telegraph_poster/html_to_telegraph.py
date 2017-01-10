@@ -58,6 +58,12 @@ def _create_element(element, text=None):
     return new_element
 
 
+def _insert_after(element, ref):
+    parent = ref.getparent()
+    parent.insert(parent.index(ref) + 1, element)
+    return element
+
+
 def _wrap_tag(element, wrapper):
     new_element = _create_element(wrapper)
     new_element.append(element)
@@ -129,18 +135,21 @@ def preprocess_fragments(fragments):
     body = fragments[0].getparent()
 
     for fragment in fragments:
+        last_element = fragment
         # figure should be on the top level
         if fragment.find('figure') is not None:
             f = fragment.find('figure')
-            body.append(f)
+            last_element = _insert_after(f, last_element)
 
         images_to_wrap = fragment.xpath('.//self::img[not(ancestor::figure)]')
-        if len(images_to_wrap):
-            for image in images_to_wrap:
-                body.append(_wrap_tag(image, 'figure'))
-                if image.tail:
-                    body.append(_create_element('p', text=image.tail))
-                    image.tail = ''
+        for image in images_to_wrap:
+            figure = _create_element('figure')
+            last_element = _insert_after(figure, last_element)
+            figure.append(image)
+
+            if image.tail:
+                _insert_after(_create_element('p', text=image.tail), last_element)
+                image.tail = ''
 
     # bad iframes
     ns = {'re': "http://exslt.org/regular-expressions"}
@@ -167,7 +176,7 @@ def preprocess_fragments(fragments):
                 fragment.addnext(paragraph)
                 fragment.tail = ''
 
-    return len(body.getchildren()) and body
+    return len(body.getchildren()) and body or None
 
 
 def post_process(body):
@@ -215,9 +224,10 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
         body = preprocess_fragments(
             _fragments_from_string(html_string)
         )
-        if body:
-            for x in body.iterdescendants():
-                preprocess_media_tags(x)
+        if body is not None:
+            desc = [x for x in body.iterdescendants()]
+            for tag in desc:
+                preprocess_media_tags(tag)
 
             post_process(body)
     else:
@@ -225,7 +235,7 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
         body = fragments[0].getparent() if len(fragments) else None
 
     content = []
-    if body:
+    if body is not None:
         content = [_recursive_convert(x) for x in body.iterchildren()]
 
     return json.dumps(content, ensure_ascii=False)

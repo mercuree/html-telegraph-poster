@@ -133,7 +133,8 @@ class TelegraphConversionTest(unittest.TestCase):
 
         para_with_text = '<p> abc <span> <img src="image1.jpg"/>xyz </span> </p>'
         para_with_figure = '<p> <figure> <img src="image0.jpg"/> <figcaption>test</figcaption></figure> </p>'
-
+        para_img1 = '<p>Text 1 <figure> <img src="image0.jpg"/> <figcaption>test</figcaption></figure> </p><p>Text 2<p>'
+        para_img2 = '<p> Text 1 <img src="image0.jpg"/>Text after image </p><p>Text 2 </p>'
         self.assertJson(
             [
                 {"children": [{"attrs": {"src": "image0.jpg"}, "tag": "img"}], "tag": "figure"},
@@ -157,6 +158,28 @@ class TelegraphConversionTest(unittest.TestCase):
                                                 {'tag': 'figcaption', 'children': ['test']}]}
             ],
             convert_html_to_telegraph_format(para_with_figure, clean_html=True)
+        )
+
+        self.assertJson(
+            [
+                {"tag": "p", "children": ["Text 1 "]},
+                {
+                    "tag": "figure", "children":
+                    [" ", {"tag": "img", "attrs": {"src": "image0.jpg"}}, " ",
+                        {"tag": "figcaption", "children": ["test"]}]
+                },
+                {"tag": "p", "children": ["Text 2"]}
+            ],
+            convert_html_to_telegraph_format(para_img1, clean_html=True)
+        )
+
+        self.assertJson(
+            [
+                {"tag": "p", "children": [" Text 1 "]},
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image0.jpg"}}]},
+                {"tag": "p", "children": ["Text after image "]}, {"tag": "p", "children": ["Text 2 "]}
+             ],
+            convert_html_to_telegraph_format(para_img2, clean_html=True)
         )
 
     def test_image_tag_at_the_top(self):
