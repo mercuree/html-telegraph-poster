@@ -131,7 +131,7 @@ class TelegraphConversionTest(unittest.TestCase):
         html = '<p> <img src="image0.jpg"/></p>' \
                '<p>  <span> <img src="image1.jpg"/>   </span> <img src="image2.jpg"/> </p>'
 
-        para_with_text = '<p>  <span> <img src="image1.jpg"/>abc </span> </p>'
+        para_with_text = '<p> abc <span> <img src="image1.jpg"/>xyz </span> </p>'
         para_with_figure = '<p> <figure> <img src="image0.jpg"/> <figcaption>test</figcaption></figure> </p>'
 
         self.assertJson(
@@ -142,9 +142,12 @@ class TelegraphConversionTest(unittest.TestCase):
             ],
             convert_html_to_telegraph_format(html, clean_html=True)
         )
+
         self.assertJson(
             [
-                {'tag': 'p', 'children': ['   ', {'tag': 'img', 'attrs': {'src': 'image1.jpg'}}, 'abc  ']}
+                {"tag": "p", "children": [" abc  "]},
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image1.jpg"}}]},
+                {"tag": "p", "children": ["xyz  "]}
             ],
             convert_html_to_telegraph_format(para_with_text, clean_html=True)
         )
@@ -158,19 +161,20 @@ class TelegraphConversionTest(unittest.TestCase):
 
     def test_image_tag_at_the_top(self):
         html = '<img src="image.jpg" title="image"/>'
-        html_with_text_after = '<img src="image.jpg" title="image"/> Text after'
-        html_with_text_before = 'Text before <img src="image.jpg" title="image"/>'
+        html_with_text_after = '<img src="image1.jpg" title="image"/> Text after'
+        html_with_text_before = 'Text before <img src="image0.jpg" title="image"/>'
         html_joined = html_with_text_before + html_with_text_after
         self.assertJson(
             [
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"}
+                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "figure"}
             ],
             convert_html_to_telegraph_format(html, clean_html=True)
         )
 
         self.assertJson(
             [
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}, ' Text after'], "tag": "p"}
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image1.jpg"}}]},
+                {"tag": "p", "children": [" Text after"]}
             ],
             convert_html_to_telegraph_format(html_with_text_after, clean_html=True)
         )
@@ -178,15 +182,17 @@ class TelegraphConversionTest(unittest.TestCase):
         self.assertJson(
             [
                 {"children": ["Text before "], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"}
+                {"children": [{"attrs": {"src": "image0.jpg"}, "tag": "img"}], "tag": "figure"}
             ],
             convert_html_to_telegraph_format(html_with_text_before, clean_html=True)
         )
+
         self.assertJson(
             [
-                {"children": ["Text before "], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}, " Text after"], "tag": "p"}
+                {"tag": "p", "children": ["Text before "]},
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image0.jpg"}}]},
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image1.jpg"}}]},
+                {"tag": "p", "children": [" Text after"]}
             ],
             convert_html_to_telegraph_format(html_joined, clean_html=True)
         )
@@ -238,8 +244,8 @@ class TelegraphConversionTest(unittest.TestCase):
         mix = iframe_child_no_src + html + iframe_empty_src + iframe_no_src
         self.assertJson(
             [
-                {'tag': 'p', 'children': [{'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
-                'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}]}
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
+                'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}
              ],
             convert_html_to_telegraph_format(html, clean_html=True)
         )
@@ -258,8 +264,8 @@ class TelegraphConversionTest(unittest.TestCase):
 
         self.assertJson(
             [
-                {'tag': 'p', 'children': [{'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
-                    'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}]}
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
+                'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}
             ],
             convert_html_to_telegraph_format(mix, clean_html=True)
         )
@@ -276,7 +282,7 @@ class TelegraphConversionTest(unittest.TestCase):
         )
         self.assertJson(
             [
-                {u'tag': u'p', u'children': [{u'tag': u'figure', u'children': [{u'tag': u'iframe', u'attrs': {u'src': u'/embed/vimeo?url=https%3A%2F%2Fvimeo.com%2F1185346'}}]}]}
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {'src': '/embed/vimeo?url=https%3A%2F%2Fvimeo.com%2F1185346'}}]}
             ],
             convert_html_to_telegraph_format(iframe_vimeo, clean_html=True)
         )
@@ -351,6 +357,15 @@ class TelegraphConversionTest(unittest.TestCase):
             convert_html_to_telegraph_format(html, clean_html=False)
         )
 
+    def test_empty_links(self):
+        html = '<a href="http://example.com/">   <img src="http://httpbin.org/image/jpeg"/>   </a>'
+
+        self.assertJson(
+            [
+                {'tag': 'figure', 'children': [{'tag': 'img', 'attrs': {'src': 'http://httpbin.org/image/jpeg'}}]}
+            ],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
 
 class UploadImageTest(unittest.TestCase):
 

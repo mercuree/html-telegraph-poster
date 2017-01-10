@@ -49,10 +49,12 @@ def clean_article_html(html_string):
     return html_string.strip(' \t')
 
 
-def _create_element(element):
+def _create_element(element, text=None):
     # creates lxml element without document tree (no body, no parents)
     new_element = html.HtmlElement()
     new_element.tag = element
+    if text:
+        new_element.text = text
     return new_element
 
 
@@ -132,18 +134,19 @@ def preprocess_fragments(fragments):
             f = fragment.find('figure')
             body.append(f)
 
-        images_to_wrap = fragment.xpath('.//self::p[not(normalize-space(string()))]//img')
+        images_to_wrap = fragment.xpath('.//self::img[not(ancestor::figure)]')
         if len(images_to_wrap):
             for image in images_to_wrap:
-                image.tail = ''
                 body.append(_wrap_tag(image, 'figure'))
+                if image.tail:
+                    body.append(_create_element('p', text=image.tail))
+                    image.tail = ''
 
-        body.append(fragment)
     # bad iframes
     ns = {'re': "http://exslt.org/regular-expressions"}
     bad_tags.extend(fragments[-1].xpath("//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
     # bad lists (remove lists/list items if empty)
-    nodes_not_to_be_empty = fragments[-1].xpath('//ul|//ol|//li|//p')
+    nodes_not_to_be_empty = fragments[-1].xpath('//ul|//ol|//li')
     bad_tags.extend([x for x in nodes_not_to_be_empty if len(x.text_content().strip()) == 0])
 
     for bad_tag in bad_tags:
@@ -165,6 +168,15 @@ def preprocess_fragments(fragments):
                 fragment.tail = ''
 
     return len(body.getchildren()) and body
+
+
+def post_process(body):
+
+    bad_tags = body.xpath('//p|//a')
+
+    for x in bad_tags:
+        if len(x.text_content().strip()) == 0:
+            x.drop_tag()
 
 
 def _recursive_convert(element):
@@ -206,6 +218,8 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
         if body:
             for x in body.iterdescendants():
                 preprocess_media_tags(x)
+
+            post_process(body)
     else:
         fragments = _fragments_from_string(html_string)
         body = fragments[0].getparent() if len(fragments) else None
