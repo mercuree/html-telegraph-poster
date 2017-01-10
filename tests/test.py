@@ -13,6 +13,18 @@ class TelegraphConversionTest(unittest.TestCase):
             json.loads(second)
         )
 
+    def test_text_only(self):
+        html = 'only plain text'
+        html_empty_string = '               '
+        self.assertJson(
+            [{'children': ['only plain text'], 'tag': 'p'}],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
+        self.assertJson(
+            [],
+            convert_html_to_telegraph_format(html_empty_string, clean_html=True)
+        )
+
     def test_text_on_top(self):
         html = '''
 <div>
@@ -322,6 +334,21 @@ class TelegraphConversionTest(unittest.TestCase):
                 {'tag': 'ol', 'children': [{'tag': 'li', 'children': ['first']}]}
             ],
             convert_html_to_telegraph_format(empty_list, clean_html=True)
+        )
+
+    def test_convert_without_clean(self):
+        # multiple br tags should be replaced with one line break
+        html = 'Text first line' \
+               '<br><br /> <br class="somebrclass">  <div>' \
+               '</div> <br id="somebrid"/> <p>text</p> <br>' \
+               '<span><em><strong><i></i><u></u></strong></em></span>'
+        self.assertJson(
+            [{'tag': 'p', 'children': ['Text first line']}, {'tag': 'br'}, {'tag': 'br'},
+             {'tag': 'br', 'attrs': {'class': 'somebrclass'}}, {'tag': 'div'},
+             {'tag': 'br', 'attrs': {'id': 'somebrid'}}, {'tag': 'p', 'children': ['text']}, {'tag': 'br'},
+             {'tag': 'span',
+              'children': [{'tag': 'em', 'children': [{'tag': 'strong', 'children': [{'tag': 'i'}, {'tag': 'u'}]}]}]}],
+            convert_html_to_telegraph_format(html, clean_html=False)
         )
 
 

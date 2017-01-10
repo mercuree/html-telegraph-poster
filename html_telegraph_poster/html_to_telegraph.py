@@ -49,11 +49,38 @@ def clean_article_html(html_string):
     return html_string.strip(' \t')
 
 
-def _wrap_tag(element, wrapper):
+def _create_element(element):
+    # creates lxml element without document tree (no body, no parents)
     new_element = html.HtmlElement()
-    new_element.tag = wrapper
+    new_element.tag = element
+    return new_element
+
+
+def _wrap_tag(element, wrapper):
+    new_element = _create_element(wrapper)
     new_element.append(element)
     return new_element
+
+
+def _fragments_from_string(html_string):
+    fragments = html.fragments_fromstring(html_string)
+    if not len(fragments):
+        return []
+    # convert and append text node before starting tag
+    if not isinstance(fragments[0], html.HtmlElement):
+        if len(fragments[0].strip()) > 0:
+            if len(fragments) == 1:
+                return html.fragments_fromstring('<p>%s</p>' % fragments[0])
+            else:
+                paragraph = _create_element('p')
+                paragraph.text = fragments[0]
+                fragments[1].addprevious(paragraph)
+                fragments.insert(1, paragraph)
+
+        fragments.pop(0)
+        if not len(fragments):
+            return []
+    return fragments
 
 
 def preprocess_media_tags(element):
@@ -78,7 +105,8 @@ def preprocess_media_tags(element):
                 elif vimeo:
                     element.set('src', '/embed/vimeo?url=' + quote_plus('https://vimeo.com/' + vimeo.group(2)))
 
-                element = _wrap_tag(element, 'figure')
+                element.addprevious(_create_element('figure'))
+                element.getprevious().append(element)
         elif element.tag == 'blockquote' and element.get('class') == 'twitter-tweet':
             twitter_links = element.xpath('.//a')
             for tw_link in twitter_links:
@@ -86,34 +114,31 @@ def preprocess_media_tags(element):
                     twitter_frame = html.HtmlElement()
                     twitter_frame.tag = 'iframe'
                     twitter_frame.set('src', '/embed/twitter?url=' + quote_plus(tw_link.get('href')))
-                    element = _wrap_tag(twitter_frame, 'figure')
-
-    return element
+                    element.addprevious(_wrap_tag(twitter_frame, 'figure'))
+                    element.drop_tree()
 
 
 def preprocess_fragments(fragments):
-    processed_fragments = []
     bad_tags = []
 
     if not len(fragments):
-        return processed_fragments
+        return None
 
-    # convert and append text node before starting tag
-    if not isinstance(fragments[0], html.HtmlElement):
-        if len(fragments[0].strip()) > 0:
-            processed_fragments.append(html.fromstring('<p>%s</p>' % fragments[0]))
-        fragments.pop(0)
-        if not len(fragments):
-            return processed_fragments
+    body = fragments[0].getparent()
 
     for fragment in fragments:
         # figure should be on the top level
         if fragment.find('figure') is not None:
             f = fragment.find('figure')
-            processed_fragments.append(f)
-            fragment.remove(f)
+            body.append(f)
 
-        processed_fragments.append(fragment)
+        images_to_wrap = fragment.xpath('.//self::p[not(normalize-space(string()))]//img')
+        if len(images_to_wrap):
+            for image in images_to_wrap:
+                image.tail = ''
+                body.append(_wrap_tag(image, 'figure'))
+
+        body.append(fragment)
     # bad iframes
     ns = {'re': "http://exslt.org/regular-expressions"}
     bad_tags.extend(fragments[-1].xpath("//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
@@ -125,15 +150,25 @@ def preprocess_fragments(fragments):
         bad_tag.drop_tag()
         if bad_tag in fragments:
             fragments.remove(bad_tag)
-        if bad_tag in processed_fragments:
-            processed_fragments.remove(bad_tag)
 
-    return processed_fragments
+    for fragment in fragments:
+        if fragment.tag not in allowed_top_level_tags:
+            paragraph = _create_element('p')
+            fragment.addprevious(paragraph)
+            paragraph.append(fragment)
+        else:
+            # convert and append text nodes after closing tag
+            if fragment.tail and len(fragment.tail.strip()) != 0:
+                paragraph = _create_element('p')
+                paragraph.text = fragment.tail
+                fragment.addnext(paragraph)
+                fragment.tail = ''
+
+    return len(body.getchildren()) and body
 
 
 def _recursive_convert(element):
 
-    element = preprocess_media_tags(element)
     fragment_root_element = {
         'tag': element.tag
     }
@@ -165,26 +200,19 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
     if clean_html:
         html_string = clean_article_html(html_string)
 
-    fragments = preprocess_fragments(
-        html.fragments_fromstring(html_string)
-    )
+        body = preprocess_fragments(
+            _fragments_from_string(html_string)
+        )
+        if body:
+            for x in body.iterdescendants():
+                preprocess_media_tags(x)
+    else:
+        fragments = _fragments_from_string(html_string)
+        body = fragments[0].getparent() if len(fragments) else None
+
     content = []
-
-    for fragment in fragments:
-
-        if fragment.tag not in allowed_top_level_tags:
-            paragraph = html.HtmlElement()
-            paragraph.tag = 'p'
-            paragraph.append(fragment)
-            content.append(_recursive_convert(paragraph))
-        else:
-            content.append(_recursive_convert(fragment))
-
-            # convert and append text nodes after closing tag
-            if fragment.tail and len(fragment.tail.strip()) != 0:
-                content.append(
-                    _recursive_convert(html.fromstring('<p>%s</p>' % fragment.tail))
-                )
+    if body:
+        content = [_recursive_convert(x) for x in body.iterchildren()]
 
     return json.dumps(content, ensure_ascii=False)
 
