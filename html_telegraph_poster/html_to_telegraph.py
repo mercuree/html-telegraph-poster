@@ -93,10 +93,7 @@ def _fragments_from_string(html_string):
 
 def preprocess_media_tags(element):
     if isinstance(element, html.HtmlElement):
-        if element.tag == 'figcaption':
-            # figcaption may have only text content
-            [e.drop_tag() for e in element.findall('*')]
-        elif element.tag in ['ol', 'ul']:
+        if element.tag in ['ol', 'ul']:
             # ignore any spaces between <ul> and <li>
             element.text = ''
         elif element.tag == 'li':
@@ -154,6 +151,8 @@ def preprocess_fragments(fragments):
     # bad iframes
     ns = {'re': "http://exslt.org/regular-expressions"}
     bad_tags.extend(fragments[-1].xpath("//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
+    # figcaption may have only text content
+    bad_tags.extend(fragments[-1].xpath("//figcaption//*"))
     # bad lists (remove lists/list items if empty)
     nodes_not_to_be_empty = fragments[-1].xpath('//ul|//ol|//li')
     bad_tags.extend([x for x in nodes_not_to_be_empty if len(x.text_content().strip()) == 0])

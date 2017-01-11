@@ -133,7 +133,7 @@ class TelegraphConversionTest(unittest.TestCase):
 
         para_with_text = '<p> abc <span> <img src="image1.jpg"/>xyz </span> </p>'
         para_with_figure = '<p> <figure> <img src="image0.jpg"/> <figcaption>test</figcaption></figure> </p>'
-        para_img1 = '<p>Text 1 <figure> <img src="image0.jpg"/> <figcaption>test</figcaption></figure> </p><p>Text 2<p>'
+        para_img1 = '<p>Text 1 <figure> <img src="image0.jpg"/> <figcaption><em>test</em></figcaption></figure> </p><p>Text 2<p>'
         para_img2 = '<p> Text 1 <img src="image0.jpg"/>Text after image </p><p>Text 2 </p>'
         self.assertJson(
             [
