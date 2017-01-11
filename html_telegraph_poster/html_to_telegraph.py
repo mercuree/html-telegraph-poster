@@ -242,14 +242,15 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
 
 
 def _upload(title, author, text,
-            author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent, convert_html=True):
+            author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent, convert_html=True,
+            clean_html=True):
 
     if not title:
         raise TitleRequiredError('Title is required')
     if not text:
         raise TextRequiredError('Text is required')
 
-    content = convert_html_to_telegraph_format(text) if convert_html else text
+    content = convert_html_to_telegraph_format(text, clean_html) if convert_html else text
     cookies = dict(tph_uuid=tph_uuid) if tph_uuid and page_id else None
 
     fields = {
@@ -286,7 +287,7 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
 
 
 class TelegraphPoster(object):
-    def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent):
+    def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent, clean_html=True):
         self.title = None
         self.author = None
         self.author_url = None
@@ -294,6 +295,7 @@ class TelegraphPoster(object):
         self.tph_uuid = tph_uuid
         self.page_id = page_id
         self.user_agent = user_agent
+        self.clean_html = clean_html
 
     def post(self, title, author, text, author_url=''):
         result = self.edit(
@@ -310,12 +312,13 @@ class TelegraphPoster(object):
         return result
 
     def edit(self, title=None, author=None, text=None):
-        return upload_to_telegraph(
+        return _upload(
             title=title or self.title,
             author=author or self.author,
             text=text or self.text,
             author_url=self.author_url,
             tph_uuid=self.tph_uuid,
             page_id=self.page_id,
-            user_agent=self.user_agent
+            user_agent=self.user_agent,
+            clean_html=self.clean_html
         )
