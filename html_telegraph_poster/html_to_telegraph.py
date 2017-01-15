@@ -11,13 +11,15 @@ from .errors import *
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 default_user_agent = 'Python_telegraph_poster/0.1'
-allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i', 'iframe',
-                'img', 'li', 'ol', 'p', 's', 'strong', 'u', 'ul', 'video']
-allowed_top_level_tags = ['aside', 'blockquote', 'figure', 'h3', 'h4', 'hr', 'ol', 'p', 'ul']
+allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i',
+                'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'u', 'ul', 'video']
+allowed_top_level_tags = ['aside', 'blockquote', 'pre', 'figure', 'h3', 'h4', 'hr', 'ol', 'p', 'ul']
 
 youtube_re = r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/'
 vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
+pre_content_re = re.compile(r'<pre[^>]*>[^<]*</pre>')
+line_breaks_and_empty_strings = re.compile('(^[\s\t]*)?\r?\n', flags=re.MULTILINE)
 
 
 def clean_article_html(html_string):
@@ -41,12 +43,34 @@ def clean_article_html(html_string):
     cleaned = c.clean_html(html_string)
     # remove wrapped div
     cleaned = cleaned[5:-6]
-    # remove all line breaks and empty strings (in html it means nothing)
-    html_string = re.sub('(^[\s\t]*)?\r?\n', '', cleaned, flags=re.MULTILINE)
+    # remove all line breaks and empty strings
+    html_string = replace_line_breaks_except_pre(cleaned)
     # but replace multiple br tags with one line break, telegraph will convert it to <br class="inline">
     html_string = re.sub(r'(<br(/?>|\s[^<>]*>)\s*)+', '\n', html_string)
 
     return html_string.strip(' \t')
+
+
+def replace_line_breaks_except_pre(html_string):
+    # Remove all line breaks and empty strings, except pre tag
+    # how to make it in one string? :\
+    pre_ranges = [0]
+    out = ''
+
+    # get <pre> start/end postion
+    for x in pre_content_re.finditer(html_string):
+        start, end = x.start(), x.end()
+        pre_ranges.extend((start, end))
+    pre_ranges.append(len(html_string))
+
+    # all odd elements are <pre>, leave them untouched
+    for k in range(1, len(pre_ranges)):
+        part = html_string[pre_ranges[k-1]:pre_ranges[k]]
+        if k % 2 == 0:
+            out += part
+        else:
+            out += line_breaks_and_empty_strings.sub('', part)
+    return out
 
 
 def _create_element(element, text=None):
@@ -153,6 +177,10 @@ def preprocess_fragments(fragments):
     bad_tags.extend(fragments[-1].xpath("//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
     # figcaption may have only text content
     bad_tags.extend(fragments[-1].xpath("//figcaption//*"))
+
+    # drop all tags inside pre
+    bad_tags.extend(fragments[-1].xpath("//pre//*"))
+
     # bad lists (remove lists/list items if empty)
     nodes_not_to_be_empty = fragments[-1].xpath('//ul|//ol|//li')
     bad_tags.extend([x for x in nodes_not_to_be_empty if len(x.text_content().strip()) == 0])
@@ -185,6 +213,17 @@ def post_process(body):
     for x in bad_tags:
         if len(x.text_content().strip()) == 0:
             x.drop_tag()
+
+    # group following pre elements into single one (telegraph is buggy)
+    pres = body.xpath('//pre')
+    for pre in pres:
+        next_pre = pre.getnext()
+        while next_pre is not None and next_pre.tag == 'pre':
+            pre.text += "\n" + next_pre.text
+            current_pre = next_pre
+            next_pre = next_pre.getnext()
+            pres.remove(current_pre)
+            current_pre.drop_tree()
 
 
 def _recursive_convert(element):

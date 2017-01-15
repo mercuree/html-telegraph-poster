@@ -390,6 +390,69 @@ class TelegraphConversionTest(unittest.TestCase):
             convert_html_to_telegraph_format(html, clean_html=True)
         )
 
+    def test_code_block(self):
+        html = '''<pre>
+        def test_code_block(self):
+            html = ''
+            print("hello world")
+        </pre>'''
+        html2 = '''
+            <p><pre
+            class="code">
+                def hello_world():
+                    print("hello")
+            </pre>
+            <pre>print("second pre")</pre>
+            </p>
+            <p> Text after pre </p>
+        '''
+        html3 = '''
+<pre><code class="python hljs">my_list = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">7</span>]
+EVEN = slice(<span class="hljs-number">1</span>, <span class="hljs-keyword">None</span>, <span class="hljs-number">2</span>)
+print(my_list[EVEN])     <span class="hljs-comment"># [2, 4, 6]</span>
+</code></pre>
+<p> paragraph splitter</p>
+<pre> String anotherCodeBlock = "separated code block"</pre>
+<pre>  String anotherCodeBlock2 = "separated code block2"</pre>
+<pre>  String anotherCodeBlock3 = "separated code block3"</pre>
+<p> paragraph splitter</p>
+<pre>  String anotherCodeBlock4 = "separated code block4"</pre>
+<pre>  String anotherCodeBlock5 = "separated code block5"</pre>
+<p> paragraph splitter</p>
+<pre>  String anotherCodeBlock6 = "separated code block6"</pre>
+        '''
+        self.assertJson(
+            [
+                {"tag": "pre", "children": [
+                    "\n        def test_code_block(self):\n            html = ''\n            print(\"hello world\")\n        "]}
+            ],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "pre", "attrs": {"class": "code"}, "children": [
+                    "\n                def hello_world():\n                    print(\"hello\")\n            \nprint(\"second pre\")"]},
+                 {"tag": "p", "children": [" Text after pre "]}
+            ],
+            convert_html_to_telegraph_format(html2, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "pre", "children": [
+                    "my_list = [1, 2, 3, 4, 5, 6, 7]\nEVEN = slice(1, None, 2)\nprint(my_list[EVEN])     # [2, 4, 6]\n"]},
+                {"tag": "p", "children": [" paragraph splitter"]},
+                {"tag": "pre", "children": [
+                    " String anotherCodeBlock = \"separated code block\"\n  String anotherCodeBlock2 = \"separated code block2\"\n  String anotherCodeBlock3 = \"separated code block3\""]},
+                {"tag": "p", "children": [" paragraph splitter"]},
+                {"tag": "pre", "children": [
+                    "  String anotherCodeBlock4 = \"separated code block4\"\n  String anotherCodeBlock5 = \"separated code block5\""]},
+                {"tag": "p", "children": [" paragraph splitter"]},
+                {"tag": "pre", "children": ["  String anotherCodeBlock6 = \"separated code block6\""]}
+            ],
+            convert_html_to_telegraph_format(html3, clean_html=True)
+        )
+
+
 class UploadImageTest(unittest.TestCase):
 
     def test_upload(self):
