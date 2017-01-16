@@ -1,8 +1,6 @@
 import mimetypes
 import re
 import requests
-from html_telegraph_poster.html_to_telegraph import default_user_agent
-from .errors import *
 
 from io import BytesIO
 base_url = 'https://telegra.ph'
@@ -10,11 +8,27 @@ save_url = 'https://edit.telegra.ph/save'
 upload_file_url = 'http://telegra.ph/upload'
 
 
+class Error(Exception):
+    pass
+
+
+class GetImageRequestError(Error):
+    pass
+
+
+class ImageUploadHTTPError(Error):
+    pass
+
+
+class FileTypeNotSupported(Error):
+    pass
+
+
 def _check_mimetypes(type):
     return type in ['image/jpeg', 'image/png', 'image/gif', 'video/mp4']
 
 
-def upload_image(file_name_or_url, user_agent=default_user_agent):
+def upload_image(file_name_or_url, user_agent='Python_telegraph_poster/0.1'):
 
     if re.match(r'^https?://', file_name_or_url, flags=re.IGNORECASE):
         img = requests.get(file_name_or_url, headers={'User-Agent': user_agent})
