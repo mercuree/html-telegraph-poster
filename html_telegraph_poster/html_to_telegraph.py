@@ -218,7 +218,7 @@ def post_process(body):
     pres = body.xpath('//pre')
     for pre in pres:
         next_pre = pre.getnext()
-        while next_pre is not None and next_pre.tag == 'pre':
+        while next_pre is not None and next_pre in pres:
             pre.text += "\n" + next_pre.text
             current_pre = next_pre
             next_pre = next_pre.getnext()
