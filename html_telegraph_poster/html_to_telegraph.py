@@ -94,6 +94,17 @@ def _wrap_tag(element, wrapper):
     return new_element
 
 
+def join_following_elements(elements, join_string):
+    for element in elements:
+        next_element = element.getnext()
+        while next_element is not None and next_element in elements:
+            element.text += join_string + next_element.text
+            current = next_element
+            next_element = next_element.getnext()
+            elements.remove(current)
+            current.drop_tree()
+
+
 def _fragments_from_string(html_string):
     fragments = html.fragments_fromstring(html_string)
     if not len(fragments):
@@ -215,15 +226,7 @@ def post_process(body):
             x.drop_tag()
 
     # group following pre elements into single one (telegraph is buggy)
-    pres = body.xpath('//pre')
-    for pre in pres:
-        next_pre = pre.getnext()
-        while next_pre is not None and next_pre in pres:
-            pre.text += "\n" + next_pre.text
-            current_pre = next_pre
-            next_pre = next_pre.getnext()
-            pres.remove(current_pre)
-            current_pre.drop_tree()
+    join_following_elements(body.xpath('//pre'), join_string="\n")
 
 
 def _recursive_convert(element):
