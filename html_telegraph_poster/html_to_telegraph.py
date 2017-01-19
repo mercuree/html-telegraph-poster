@@ -94,15 +94,19 @@ def _wrap_tag(element, wrapper):
     return new_element
 
 
-def join_following_elements(elements, join_string):
+def join_following_elements(elements, join_string=''):
     for element in elements:
         next_element = element.getnext()
         while next_element is not None and next_element in elements:
-            element.text += join_string + next_element.text
             current = next_element
             next_element = next_element.getnext()
+            if current.text:
+                current.text = join_string + current.text
+            if current.tail:
+                current.tail = current.tail.strip()
+            element.append(current)
             elements.remove(current)
-            current.drop_tree()
+            current.drop_tag()
 
 
 def _fragments_from_string(html_string):
