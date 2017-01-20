@@ -266,11 +266,12 @@ class TelegraphConversionTest(unittest.TestCase):
         iframe_not_allowed_src = '<div><iframe src="http://example.com"></iframe></div>'
         iframe_vimeo = '<iframe src="https://player.vimeo.com/video/1185346"></iframe>'
         mix = iframe_child_no_src + html + iframe_empty_src + iframe_no_src
+        iframe_with_figure = '<figure><iframe src="//www.youtube.com/embed/abcdef"></iframe>Text after </figure>'
         self.assertJson(
             [
                 {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
                 'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}
-             ],
+            ],
             convert_html_to_telegraph_format(html, clean_html=True)
         )
         self.assertJson(
@@ -317,6 +318,14 @@ class TelegraphConversionTest(unittest.TestCase):
              ],
             convert_html_to_telegraph_format(iframe_text_after, clean_html=True)
         )
+        self.assertJson(
+            [
+                {u'tag': u'figure', u'children': [{u'tag': u'iframe', u'attrs': {
+                    u'src': u'/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}, u'Text after ']}
+            ],
+            convert_html_to_telegraph_format(iframe_with_figure, clean_html=True)
+        )
+
 
     def test_twitter_links(self):
         html = '''

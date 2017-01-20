@@ -158,7 +158,8 @@ def preprocess_media_tags(element):
                 elif vimeo:
                     element.set('src', '/embed/vimeo?url=' + quote_plus('https://vimeo.com/' + vimeo.group(2)))
 
-                _wrap_figure(element)
+                if not len(element.xpath('./ancestor::figure')):
+                    _wrap_figure(element)
 
         elif element.tag == 'blockquote' and element.get('class') == 'twitter-tweet':
             twitter_links = element.xpath('.//a')
