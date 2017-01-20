@@ -94,6 +94,15 @@ def _wrap_tag(element, wrapper):
     return new_element
 
 
+def _wrap_figure(element):
+    figure = _create_element('figure')
+    element.addprevious(figure)
+    element.drop_tag()
+    element.tail = ''
+    figure.append(element)
+    return figure
+
+
 def join_following_elements(elements, join_string=''):
     for element in elements:
         next_element = element.getnext()
@@ -149,8 +158,8 @@ def preprocess_media_tags(element):
                 elif vimeo:
                     element.set('src', '/embed/vimeo?url=' + quote_plus('https://vimeo.com/' + vimeo.group(2)))
 
-                element.addprevious(_create_element('figure'))
-                element.getprevious().append(element)
+                _wrap_figure(element)
+
         elif element.tag == 'blockquote' and element.get('class') == 'twitter-tweet':
             twitter_links = element.xpath('.//a')
             for tw_link in twitter_links:
@@ -158,7 +167,8 @@ def preprocess_media_tags(element):
                     twitter_frame = html.HtmlElement()
                     twitter_frame.tag = 'iframe'
                     twitter_frame.set('src', '/embed/twitter?url=' + quote_plus(tw_link.get('href')))
-                    element.addprevious(_wrap_tag(twitter_frame, 'figure'))
+                    element.addprevious(twitter_frame)
+                    _wrap_figure(twitter_frame)
                     element.drop_tree()
 
 
