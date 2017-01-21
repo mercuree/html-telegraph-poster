@@ -267,6 +267,14 @@ class TelegraphConversionTest(unittest.TestCase):
         iframe_vimeo = '<iframe src="https://player.vimeo.com/video/1185346"></iframe>'
         mix = iframe_child_no_src + html + iframe_empty_src + iframe_no_src
         iframe_with_figure = '<figure><iframe src="//www.youtube.com/embed/abcdef"></iframe>Text after </figure>'
+
+        multiple_iframes = '<p>'\
+            'Text before'\
+            '<a href="/123">link</a><iframe src="//www.youtube.com/embed/abcdef"></iframe> text'\
+            '<a href="/246">link2</a> Text after link'\
+            '<iframe src="//www.youtube.com/embed/xyzxyzxyz"></iframe>'\
+            '</p>'
+
         self.assertJson(
             [
                 {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
@@ -326,7 +334,16 @@ class TelegraphConversionTest(unittest.TestCase):
             ],
             convert_html_to_telegraph_format(iframe_with_figure, clean_html=True)
         )
-
+        self.assertJson(
+            [
+                {"tag": "p", "children": ["Text before", {"tag": "a", "attrs": {"href": "/123"}, "children": ["link"]}]},
+                {"tag": "figure", "children": [{"tag": "iframe", "attrs": {
+                    "src": "/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef"}}]},
+                {"tag": "p", "children": [" text", {"tag": "a", "attrs": {"href": "/246"}, "children": ["link2"]}, " Text after link"]},
+                {"tag": "figure", "children": [{"tag": "iframe", "attrs": {
+                 "src": "/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dxyzxyzxyz"}}]}],
+            convert_html_to_telegraph_format(multiple_iframes, clean_html=True)
+        )
 
     def test_twitter_links(self):
         html = '''
