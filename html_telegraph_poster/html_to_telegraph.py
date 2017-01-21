@@ -173,6 +173,30 @@ def preprocess_media_tags(element):
                     element.drop_tree()
 
 
+def move_to_top(body):
+    # this should be improved to include nested elements (like lists)
+    # still buggy
+    elements = body.xpath('./*/figure')
+    for element in elements:
+        preceding_elements = element.xpath('./preceding-sibling::*')
+        parent = element.getparent()
+        if len(preceding_elements) > 0 or parent.text and len(parent.text) > 0:
+
+            new_container = _create_element(parent.tag)
+            new_container.text = parent.text
+            parent.text = ''
+            parent.addprevious(new_container)
+
+            for preceding in preceding_elements:
+                new_container.append(preceding)
+
+        parent_for_figure = element.xpath('./ancestor::*[parent::body]')[0]
+        # tail leaves inside parent
+        element.drop_tree()
+        element.tail = ''
+        parent_for_figure.addprevious(element)
+
+
 def preprocess_fragments(fragments):
     bad_tags = []
 
@@ -180,23 +204,6 @@ def preprocess_fragments(fragments):
         return None
 
     body = fragments[0].getparent()
-
-    for fragment in fragments:
-        last_element = fragment
-        # figure should be on the top level
-        if fragment.find('figure') is not None:
-            f = fragment.find('figure')
-            last_element = _insert_after(f, last_element)
-
-        images_to_wrap = fragment.xpath('.//self::img[not(ancestor::figure)]')
-        for image in images_to_wrap:
-            figure = _create_element('figure')
-            last_element = _insert_after(figure, last_element)
-            figure.append(image)
-
-            if image.tail:
-                _insert_after(_create_element('p', text=image.tail), last_element)
-                image.tail = ''
 
     # bad iframes
     ns = {'re': "http://exslt.org/regular-expressions"}
@@ -210,7 +217,8 @@ def preprocess_fragments(fragments):
     # bad lists (remove lists/list items if empty)
     nodes_not_to_be_empty = fragments[-1].xpath('//ul|//ol|//li')
     bad_tags.extend([x for x in nodes_not_to_be_empty if len(x.text_content().strip()) == 0])
-
+    # remove links with images inside
+    bad_tags.extend(body.xpath('.//a[descendant::img]'))
     for bad_tag in bad_tags:
         bad_tag.drop_tag()
         if bad_tag in fragments:
@@ -228,6 +236,10 @@ def preprocess_fragments(fragments):
                 paragraph.text = fragment.tail
                 fragment.addnext(paragraph)
                 fragment.tail = ''
+
+    images_to_wrap = body.xpath('.//img[not(ancestor::figure)]')
+    for image in images_to_wrap:
+        _wrap_figure(image)
 
     return len(body.getchildren()) and body or None
 
@@ -284,7 +296,7 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
             desc = [x for x in body.iterdescendants()]
             for tag in desc:
                 preprocess_media_tags(tag)
-
+            move_to_top(body)
             post_process(body)
     else:
         fragments = _fragments_from_string(html_string)

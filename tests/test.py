@@ -313,8 +313,9 @@ class TelegraphConversionTest(unittest.TestCase):
         )
         self.assertJson(
             [
-                {"tag": "p", "children": [{"tag": "figure", "children": [{"tag": "iframe", "attrs": {
-                "src": "/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef"}}]}, "Text after "]}
+                {"tag": "figure", "children": [{"tag": "iframe", "attrs": {
+                    "src": "/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef"}}]},
+                {"tag": "p", "children": ["Text after "]}
              ],
             convert_html_to_telegraph_format(iframe_text_after, clean_html=True)
         )
