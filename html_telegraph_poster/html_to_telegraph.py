@@ -255,6 +255,11 @@ def post_process(body):
     # group following pre elements into single one (telegraph is buggy)
     join_following_elements(body.xpath('//pre'), join_string="\n")
 
+    # remove class attributes for all
+    elements_with_class = body.xpath('.//*[@class]')
+    for element in elements_with_class:
+        element.attrib.pop('class')
+
 
 def _recursive_convert(element):
 

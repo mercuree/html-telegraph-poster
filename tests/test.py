@@ -465,7 +465,7 @@ print(my_list[EVEN])     <span class="hljs-comment"># [2, 4, 6]</span>
         )
         self.assertJson(
             [
-                {"tag": "pre", "attrs": {"class": "code"}, "children": [
+                {"tag": "pre", "children": [
                     "\n                def hello_world():\n                    print(\"hello\")\n            \nprint(\"second pre\")"]},
                  {"tag": "p", "children": [" Text after pre "]}
             ],
