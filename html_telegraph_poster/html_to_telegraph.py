@@ -224,7 +224,7 @@ def preprocess_fragments(fragments):
         if bad_tag in fragments:
             fragments.remove(bad_tag)
 
-    for fragment in fragments:
+    for fragment in body.getchildren():
         if fragment.tag not in allowed_top_level_tags:
             paragraph = _create_element('p')
             fragment.addprevious(paragraph)
