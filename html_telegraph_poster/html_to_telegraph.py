@@ -18,7 +18,7 @@ allowed_top_level_tags = ['aside', 'blockquote', 'pre', 'figure', 'h3', 'h4', 'h
 youtube_re = r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/'
 vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
-pre_content_re = re.compile(r'<pre[^>]*>[^<]*</pre>')
+pre_content_re = re.compile(r'<pre[^>]*>[\s\S]*?</pre>')
 line_breaks_and_empty_strings = re.compile('(^[\s\t]*)?\r?\n', flags=re.MULTILINE)
 
 

@@ -456,6 +456,17 @@ print(my_list[EVEN])     <span class="hljs-comment"># [2, 4, 6]</span>
 <p> paragraph splitter</p>
 <pre>  String anotherCodeBlock6 = "separated code block6"</pre>
         '''
+        html4 = '''
+<pre class="code literal-block"><p class="nv">$ </p>mkvirtualenv myvirtualenv --python<p class="o">=</p>/usr/bin/python3.4
+
+
+Running virtualenv with interpreter /usr/bin/python3.4
+Using base prefix <p class="s1">'/usr'</p>
+New python executable in myvirtualenv/bin/python3.4
+Also creating executable in myvirtualenv/bin/python
+Installing setuptools, pip...done.
+</pre>
+        '''
         self.assertJson(
             [
                 {"tag": "pre", "children": [
@@ -485,6 +496,20 @@ print(my_list[EVEN])     <span class="hljs-comment"># [2, 4, 6]</span>
                 {"tag": "pre", "children": ["  String anotherCodeBlock6 = \"separated code block6\""]}
             ],
             convert_html_to_telegraph_format(html3, clean_html=True)
+        )
+
+        print(convert_html_to_telegraph_format(html4, clean_html=True))
+        self.assertJson(
+            [
+                {"tag": "pre", "children": [
+                    "$ mkvirtualenv myvirtualenv --python=/usr/bin/python3.4\n\n\n"
+                    "Running virtualenv with interpreter /usr/bin/python3.4\n"
+                    "Using base prefix '/usr'\n"
+                    "New python executable in myvirtualenv/bin/python3.4\n"
+                    "Also creating executable in myvirtualenv/bin/python\n"
+                    "Installing setuptools, pip...done.\n"]}
+            ],
+            convert_html_to_telegraph_format(html4, clean_html=True)
         )
 
 
