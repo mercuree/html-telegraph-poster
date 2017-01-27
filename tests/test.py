@@ -497,8 +497,6 @@ Installing setuptools, pip...done.
             ],
             convert_html_to_telegraph_format(html3, clean_html=True)
         )
-
-        print(convert_html_to_telegraph_format(html4, clean_html=True))
         self.assertJson(
             [
                 {"tag": "pre", "children": [
