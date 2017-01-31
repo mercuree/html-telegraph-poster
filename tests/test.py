@@ -467,6 +467,12 @@ Also creating executable in myvirtualenv/bin/python
 Installing setuptools, pip...done.
 </pre>
         '''
+        html5 = '''
+        <p>Text before <code> inline_code = True</code> Text after</p>
+        <code> multiline_code = True
+        next_line = True
+        </code>
+        '''
         self.assertJson(
             [
                 {"tag": "pre", "children": [
@@ -508,6 +514,14 @@ Installing setuptools, pip...done.
                     "Installing setuptools, pip...done.\n"]}
             ],
             convert_html_to_telegraph_format(html4, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "p",
+                    "children": ["Text before ", {"tag": "code", "children": [" inline_code = True"]}, " Text after"]},
+                {"tag": "pre", "children": [" multiline_code = True\n        next_line = True\n        "]}
+            ],
+            convert_html_to_telegraph_format(html5, clean_html=True)
         )
 
 

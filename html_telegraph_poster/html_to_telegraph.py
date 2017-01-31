@@ -11,14 +11,14 @@ from .errors import *
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 default_user_agent = 'Python_telegraph_poster/0.1'
-allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i',
+allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'code', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i',
                 'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'u', 'ul', 'video']
 allowed_top_level_tags = ['aside', 'blockquote', 'pre', 'figure', 'h3', 'h4', 'hr', 'ol', 'p', 'ul']
 
 youtube_re = r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/'
 vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
-pre_content_re = re.compile(r'<pre[^>]*>[\s\S]*?</pre>')
+pre_content_re = re.compile(r'<(pre|code)(>|\s[^>]*>)[\s\S]*?</\1>')
 line_breaks_and_empty_strings = re.compile('(^[\s\t]*)?\r?\n', flags=re.MULTILINE)
 
 
@@ -223,6 +223,13 @@ def preprocess_fragments(fragments):
         bad_tag.drop_tag()
         if bad_tag in fragments:
             fragments.remove(bad_tag)
+
+    # code - > pre
+    # convert multiline code into pre
+    code_elements = body.xpath('.//code')
+    for code_element in code_elements:
+        if '\n' in code_element.text:
+            code_element.tag = 'pre'
 
     for fragment in body.getchildren():
         if fragment.tag not in allowed_top_level_tags:
