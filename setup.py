@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='html_telegraph_poster',
-      version='0.1.8',
+      version='0.1.9',
       description='Posts your html to telegra.ph blogging service',
       keywords='telegra.ph post html telegram',
       url='https://github.com/mercuree/html-telegraph-poster',

@@ -367,7 +367,7 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
 
 
 class TelegraphPoster(object):
-    def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent, clean_html=True):
+    def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent, clean_html=True, convert_html=True):
         self.title = None
         self.author = None
         self.author_url = None
@@ -376,17 +376,15 @@ class TelegraphPoster(object):
         self.page_id = page_id
         self.user_agent = user_agent
         self.clean_html = clean_html
+        self.convert_html = convert_html
 
     def post(self, title, author, text, author_url=''):
-        result = self.edit(
-            title,
-            author,
-            text
-        )
         self.title = title
         self.author = author
         self.author_url = author_url
         self.text = text
+        result = self.edit()
+
         self.tph_uuid = result['tph_uuid']
         self.page_id = result['page_id']
         return result
@@ -400,5 +398,6 @@ class TelegraphPoster(object):
             tph_uuid=self.tph_uuid,
             page_id=self.page_id,
             user_agent=self.user_agent,
-            clean_html=self.clean_html
+            clean_html=self.clean_html,
+            convert_html=self.convert_html
         )
