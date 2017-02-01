@@ -13,6 +13,18 @@ class TelegraphConversionTest(unittest.TestCase):
             json.loads(second)
         )
 
+    def test_text_only(self):
+        html = 'only plain text'
+        html_empty_string = '               '
+        self.assertJson(
+            [{'children': ['only plain text'], 'tag': 'p'}],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
+        self.assertJson(
+            [],
+            convert_html_to_telegraph_format(html_empty_string, clean_html=True)
+        )
+
     def test_text_on_top(self):
         html = '''
 <div>
@@ -119,9 +131,10 @@ class TelegraphConversionTest(unittest.TestCase):
         html = '<p> <img src="image0.jpg"/></p>' \
                '<p>  <span> <img src="image1.jpg"/>   </span> <img src="image2.jpg"/> </p>'
 
-        para_with_text = '<p>  <span> <img src="image1.jpg"/>abc </span> </p>'
+        para_with_text = '<p> abc <span> <img src="image1.jpg"/>xyz </span> </p>'
         para_with_figure = '<p> <figure> <img src="image0.jpg"/> <figcaption>test</figcaption></figure> </p>'
-
+        para_img1 = '<p>Text 1 <figure> <img src="image0.jpg"/> <figcaption><em>test</em></figcaption></figure> </p><p>Text 2<p>'
+        para_img2 = '<p> Text 1 <img src="image0.jpg"/>Text after image </p><p>Text 2 </p>'
         self.assertJson(
             [
                 {"children": [{"attrs": {"src": "image0.jpg"}, "tag": "img"}], "tag": "figure"},
@@ -130,9 +143,12 @@ class TelegraphConversionTest(unittest.TestCase):
             ],
             convert_html_to_telegraph_format(html, clean_html=True)
         )
+
         self.assertJson(
             [
-                {'tag': 'p', 'children': ['   ', {'tag': 'img', 'attrs': {'src': 'image1.jpg'}}, 'abc  ']}
+                {"tag": "p", "children": [" abc  "]},
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image1.jpg"}}]},
+                {"tag": "p", "children": ["xyz  "]}
             ],
             convert_html_to_telegraph_format(para_with_text, clean_html=True)
         )
@@ -144,21 +160,44 @@ class TelegraphConversionTest(unittest.TestCase):
             convert_html_to_telegraph_format(para_with_figure, clean_html=True)
         )
 
+        self.assertJson(
+            [
+                {"tag": "p", "children": ["Text 1 "]},
+                {
+                    "tag": "figure", "children":
+                    [" ", {"tag": "img", "attrs": {"src": "image0.jpg"}}, " ",
+                        {"tag": "figcaption", "children": ["test"]}]
+                },
+                {"tag": "p", "children": ["Text 2"]}
+            ],
+            convert_html_to_telegraph_format(para_img1, clean_html=True)
+        )
+
+        self.assertJson(
+            [
+                {"tag": "p", "children": [" Text 1 "]},
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image0.jpg"}}]},
+                {"tag": "p", "children": ["Text after image "]}, {"tag": "p", "children": ["Text 2 "]}
+             ],
+            convert_html_to_telegraph_format(para_img2, clean_html=True)
+        )
+
     def test_image_tag_at_the_top(self):
         html = '<img src="image.jpg" title="image"/>'
-        html_with_text_after = '<img src="image.jpg" title="image"/> Text after'
-        html_with_text_before = 'Text before <img src="image.jpg" title="image"/>'
+        html_with_text_after = '<img src="image1.jpg" title="image"/> Text after'
+        html_with_text_before = 'Text before <img src="image0.jpg" title="image"/>'
         html_joined = html_with_text_before + html_with_text_after
         self.assertJson(
             [
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"}
+                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "figure"}
             ],
             convert_html_to_telegraph_format(html, clean_html=True)
         )
 
         self.assertJson(
             [
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}, ' Text after'], "tag": "p"}
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image1.jpg"}}]},
+                {"tag": "p", "children": [" Text after"]}
             ],
             convert_html_to_telegraph_format(html_with_text_after, clean_html=True)
         )
@@ -166,15 +205,17 @@ class TelegraphConversionTest(unittest.TestCase):
         self.assertJson(
             [
                 {"children": ["Text before "], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"}
+                {"children": [{"attrs": {"src": "image0.jpg"}, "tag": "img"}], "tag": "figure"}
             ],
             convert_html_to_telegraph_format(html_with_text_before, clean_html=True)
         )
+
         self.assertJson(
             [
-                {"children": ["Text before "], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}], "tag": "p"},
-                {"children": [{"attrs": {"src": "image.jpg"}, "tag": "img"}, " Text after"], "tag": "p"}
+                {"tag": "p", "children": ["Text before "]},
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image0.jpg"}}]},
+                {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image1.jpg"}}]},
+                {"tag": "p", "children": [" Text after"]}
             ],
             convert_html_to_telegraph_format(html_joined, clean_html=True)
         )
@@ -221,14 +262,24 @@ class TelegraphConversionTest(unittest.TestCase):
         iframe_no_src = '<iframe></iframe>'
         iframe_child_no_src = '<p><iframe></iframe></p>'
         iframe_text_before = 'text before <iframe></iframe>'
+        iframe_text_after = '<p><iframe src="//www.youtube.com/embed/abcdef"></iframe>Text after </p>'
         iframe_not_allowed_src = '<div><iframe src="http://example.com"></iframe></div>'
         iframe_vimeo = '<iframe src="https://player.vimeo.com/video/1185346"></iframe>'
         mix = iframe_child_no_src + html + iframe_empty_src + iframe_no_src
+        iframe_with_figure = '<figure><iframe src="//www.youtube.com/embed/abcdef"></iframe>Text after </figure>'
+
+        multiple_iframes = '<p>'\
+            'Text before'\
+            '<a href="/123">link</a><iframe src="//www.youtube.com/embed/abcdef"></iframe> text'\
+            '<a href="/246">link2</a> Text after link'\
+            '<iframe src="//www.youtube.com/embed/xyzxyzxyz"></iframe>'\
+            '</p>'
+
         self.assertJson(
             [
-                {'tag': 'p', 'children': [{'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
-                'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}]}
-             ],
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
+                'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}
+            ],
             convert_html_to_telegraph_format(html, clean_html=True)
         )
         self.assertJson(
@@ -246,8 +297,8 @@ class TelegraphConversionTest(unittest.TestCase):
 
         self.assertJson(
             [
-                {'tag': 'p', 'children': [{'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
-                    'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}]}
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
+                'src': '/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}]}
             ],
             convert_html_to_telegraph_format(mix, clean_html=True)
         )
@@ -264,9 +315,34 @@ class TelegraphConversionTest(unittest.TestCase):
         )
         self.assertJson(
             [
-                {u'tag': u'p', u'children': [{u'tag': u'figure', u'children': [{u'tag': u'iframe', u'attrs': {u'src': u'/embed/vimeo?url=https%3A%2F%2Fvimeo.com%2F1185346'}}]}]}
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {'src': '/embed/vimeo?url=https%3A%2F%2Fvimeo.com%2F1185346'}}]}
             ],
             convert_html_to_telegraph_format(iframe_vimeo, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "figure", "children": [{"tag": "iframe", "attrs": {
+                    "src": "/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef"}}]},
+                {"tag": "p", "children": ["Text after "]}
+             ],
+            convert_html_to_telegraph_format(iframe_text_after, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {u'tag': u'figure', u'children': [{u'tag': u'iframe', u'attrs': {
+                    u'src': u'/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef'}}, u'Text after ']}
+            ],
+            convert_html_to_telegraph_format(iframe_with_figure, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "p", "children": ["Text before", {"tag": "a", "attrs": {"href": "/123"}, "children": ["link"]}]},
+                {"tag": "figure", "children": [{"tag": "iframe", "attrs": {
+                    "src": "/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dabcdef"}}]},
+                {"tag": "p", "children": [" text", {"tag": "a", "attrs": {"href": "/246"}, "children": ["link2"]}, " Text after link"]},
+                {"tag": "figure", "children": [{"tag": "iframe", "attrs": {
+                 "src": "/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dxyzxyzxyz"}}]}],
+            convert_html_to_telegraph_format(multiple_iframes, clean_html=True)
         )
 
     def test_twitter_links(self):
@@ -322,6 +398,130 @@ class TelegraphConversionTest(unittest.TestCase):
                 {'tag': 'ol', 'children': [{'tag': 'li', 'children': ['first']}]}
             ],
             convert_html_to_telegraph_format(empty_list, clean_html=True)
+        )
+
+    def test_convert_without_clean(self):
+        # multiple br tags should be replaced with one line break
+        html = 'Text first line' \
+               '<br><br /> <br class="somebrclass">  <div>' \
+               '</div> <br id="somebrid"/> <p>text</p> <br>' \
+               '<span><em><strong><i></i><u></u></strong></em></span>'
+        self.assertJson(
+            [{'tag': 'p', 'children': ['Text first line']}, {'tag': 'br'}, {'tag': 'br'},
+             {'tag': 'br', 'attrs': {'class': 'somebrclass'}}, {'tag': 'div'},
+             {'tag': 'br', 'attrs': {'id': 'somebrid'}}, {'tag': 'p', 'children': ['text']}, {'tag': 'br'},
+             {'tag': 'span',
+              'children': [{'tag': 'em', 'children': [{'tag': 'strong', 'children': [{'tag': 'i'}, {'tag': 'u'}]}]}]}],
+            convert_html_to_telegraph_format(html, clean_html=False)
+        )
+
+    def test_empty_links(self):
+        html = '<a href="http://example.com/">   <img src="http://httpbin.org/image/jpeg"/>   </a>'
+
+        self.assertJson(
+            [
+                {'tag': 'figure', 'children': [{'tag': 'img', 'attrs': {'src': 'http://httpbin.org/image/jpeg'}}]}
+            ],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
+
+    def test_code_block(self):
+        html = '''<pre>
+        def test_code_block(self):
+            html = ''
+            print("hello world")
+        </pre>'''
+        html2 = '''
+            <p><pre
+            class="code">
+                def hello_world():
+                    print("hello")
+            </pre>
+            <pre>print("second pre")</pre>
+            </p>
+            <p> Text after pre </p>
+        '''
+        html3 = '''
+<pre><code class="python hljs">my_list = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">7</span>]
+EVEN = slice(<span class="hljs-number">1</span>, <span class="hljs-keyword">None</span>, <span class="hljs-number">2</span>)
+print(my_list[EVEN])     <span class="hljs-comment"># [2, 4, 6]</span>
+</code></pre>
+<p> paragraph splitter</p>
+<pre> String anotherCodeBlock = "separated code block"</pre>
+<pre>  String anotherCodeBlock2 = "separated code block2"</pre>
+<pre>  String anotherCodeBlock3 = "separated code block3"</pre>
+<p> paragraph splitter</p>
+<pre>  String anotherCodeBlock4 = "separated code block4"</pre>
+<pre>  String anotherCodeBlock5 = "separated code block5"</pre>
+<p> paragraph splitter</p>
+<pre>  String anotherCodeBlock6 = "separated code block6"</pre>
+        '''
+        html4 = '''
+<pre class="code literal-block"><p class="nv">$ </p>mkvirtualenv myvirtualenv --python<p class="o">=</p>/usr/bin/python3.4
+
+
+Running virtualenv with interpreter /usr/bin/python3.4
+Using base prefix <p class="s1">'/usr'</p>
+New python executable in myvirtualenv/bin/python3.4
+Also creating executable in myvirtualenv/bin/python
+Installing setuptools, pip...done.
+</pre>
+        '''
+        html5 = '''
+        <p>Text before <code> inline_code = True</code> Text after</p>
+        <code> multiline_code = True
+        next_line = True
+        </code>
+        '''
+        self.assertJson(
+            [
+                {"tag": "pre", "children": [
+                    "\n        def test_code_block(self):\n            html = ''\n            print(\"hello world\")\n        "]}
+            ],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "pre", "children": [
+                    "\n                def hello_world():\n                    print(\"hello\")\n            \nprint(\"second pre\")"]},
+                 {"tag": "p", "children": [" Text after pre "]}
+            ],
+            convert_html_to_telegraph_format(html2, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "pre", "children": [
+                    "my_list = [1, 2, 3, 4, 5, 6, 7]\nEVEN = slice(1, None, 2)\nprint(my_list[EVEN])     # [2, 4, 6]\n"]},
+                {"tag": "p", "children": [" paragraph splitter"]},
+                {"tag": "pre", "children": [
+                    " String anotherCodeBlock = \"separated code block\"\n  String anotherCodeBlock2 = \"separated code block2\"\n  String anotherCodeBlock3 = \"separated code block3\""]},
+                {"tag": "p", "children": [" paragraph splitter"]},
+                {"tag": "pre", "children": [
+                    "  String anotherCodeBlock4 = \"separated code block4\"\n  String anotherCodeBlock5 = \"separated code block5\""]},
+                {"tag": "p", "children": [" paragraph splitter"]},
+                {"tag": "pre", "children": ["  String anotherCodeBlock6 = \"separated code block6\""]}
+            ],
+            convert_html_to_telegraph_format(html3, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "pre", "children": [
+                    "$ mkvirtualenv myvirtualenv --python=/usr/bin/python3.4\n\n\n"
+                    "Running virtualenv with interpreter /usr/bin/python3.4\n"
+                    "Using base prefix '/usr'\n"
+                    "New python executable in myvirtualenv/bin/python3.4\n"
+                    "Also creating executable in myvirtualenv/bin/python\n"
+                    "Installing setuptools, pip...done.\n"]}
+            ],
+            convert_html_to_telegraph_format(html4, clean_html=True)
+        )
+        self.assertJson(
+            [
+                {"tag": "p",
+                    "children": ["Text before ", {"tag": "code", "children": [" inline_code = True"]}, " Text after"]},
+                {"tag": "pre", "children": [" multiline_code = True\n        next_line = True\n        "]}
+            ],
+            convert_html_to_telegraph_format(html5, clean_html=True)
         )
 
 
