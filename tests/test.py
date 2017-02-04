@@ -2,6 +2,7 @@
 import unittest
 from html_telegraph_poster.html_to_telegraph import convert_html_to_telegraph_format
 from html_telegraph_poster.upload_images import upload_image
+from html_telegraph_poster import TelegraphPoster
 import json
 
 
@@ -530,3 +531,45 @@ class UploadImageTest(unittest.TestCase):
     def test_upload(self):
         telegraph_url = upload_image('http://httpbin.org/image/jpeg')
         self.assertIn('https://telegra.ph/file/', telegraph_url)
+
+
+class TelegraphPosterNoApiTest(unittest.TestCase):
+    def test_post(self):
+        t = TelegraphPoster()
+        result = t.post('test_no_api0201', 'unit_test', '<p>first para</p>')
+        self.assertTrue(
+            'url' in result and
+            'path' in result and
+            'tph_uuid' in result and
+            'page_id' in result
+        )
+
+
+class TelegraphPosterApiTest(unittest.TestCase):
+
+    def test_api_token(self):
+        t = TelegraphPoster(use_api=True)
+        result = t.create_api_token('teleposter_test', 'tele_author_test')
+        self.assertEqual(
+            'teleposter_test',
+            result['short_name']
+        )
+        self.assertEqual(
+            'tele_author_test',
+            result['author_name']
+        )
+
+    def test_api(self):
+        html = '<p>test paragraph</p>'
+        t = TelegraphPoster(use_api=True)
+        t.create_api_token('test_token')
+        result = t.post('test_page0201', 'au', html)
+        self.assertTrue('url' in result)
+        self.assertTrue('path' in result)
+        result2 = t.edit('test_edit_page04', 'au_edit', '<p>edit test</p>')
+        self.assertTrue('url' in result)
+        self.assertTrue('path' in result)
+        self.assertEqual(
+            result['path'],
+            result2['path']
+        )

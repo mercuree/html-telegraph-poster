@@ -10,6 +10,7 @@ from .errors import *
 
 base_url = 'https://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
+api_url = 'https://api.telegra.ph'
 default_user_agent = 'Python_telegraph_poster/0.1'
 allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'code', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i',
                 'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'u', 'ul', 'video']
@@ -362,21 +363,73 @@ def _upload(title, author, text,
         raise TelegraphError(error_msg)
 
 
+def _upload_via_api(title, author, text, author_url='', access_token=None, user_agent=default_user_agent,
+                    convert_html=True,  clean_html=True, path=None):
+
+    if not title:
+        raise TitleRequiredError('Title is required')
+    if not text:
+        raise TextRequiredError('Text is required')
+    if not access_token:
+        raise APITokenRequiredError('API token is required')
+
+    content = convert_html_to_telegraph_format(text, clean_html) if convert_html else text
+    method = '/createPage' if not path else '/editPage'
+
+    params = {
+        'access_token': access_token,
+        'title': title,
+        'author_name': author,
+        'author_url': author_url,
+        'content': content,
+    }
+    if path:
+        params.update({'path': path})
+
+    resp = requests.post(api_url + method, params, headers={'User-Agent': user_agent}).json()
+    if resp['ok'] is True:
+        return {
+            'path': resp['result']['path'],
+            'url': base_url + '/' + resp['result']['path']
+        }
+    else:
+        error_msg = resp['error'] if 'error' in resp else ''
+        raise TelegraphError(error_msg)
+
+
+def create_api_token(short_name, author_name=None, author_url=None, user_agent=default_user_agent):
+    params = {
+        'short_name': short_name,
+    }
+    if author_name:
+        params.update({'author_name': author_name})
+    if author_url:
+        params.update({'author_url': author_url})
+
+    resp = requests.get(api_url+'/createAccount', params, headers={'User-Agent': user_agent})
+    json_data = resp.json()
+    return json_data['result']
+
+
 def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent):
     return _upload(title, author, text, author_url, tph_uuid, page_id, user_agent)
 
 
 class TelegraphPoster(object):
-    def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent, clean_html=True, convert_html=True):
+    def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent, clean_html=True, convert_html=True,
+                 use_api=False, access_token=None):
         self.title = None
         self.author = None
         self.author_url = None
         self.text = None
+        self.path = None
         self.tph_uuid = tph_uuid
         self.page_id = page_id
         self.user_agent = user_agent
         self.clean_html = clean_html
         self.convert_html = convert_html
+        self.use_api = use_api
+        self.access_token = access_token
 
     def post(self, title, author, text, author_url=''):
         self.title = title
@@ -384,20 +437,33 @@ class TelegraphPoster(object):
         self.author_url = author_url
         self.text = text
         result = self.edit()
-
-        self.tph_uuid = result['tph_uuid']
-        self.page_id = result['page_id']
+        if not self.use_api:
+            self.tph_uuid = result['tph_uuid']
+            self.page_id = result['page_id']
         return result
 
     def edit(self, title=None, author=None, text=None):
-        return _upload(
-            title=title or self.title,
-            author=author or self.author,
-            text=text or self.text,
-            author_url=self.author_url,
-            tph_uuid=self.tph_uuid,
-            page_id=self.page_id,
-            user_agent=self.user_agent,
-            clean_html=self.clean_html,
-            convert_html=self.convert_html
-        )
+        params = {
+            'title': title or self.title,
+            'author': author or self.author,
+            'text': text or self.text,
+            'author_url': self.author_url,
+            'user_agent': self.user_agent,
+            'clean_html': self.clean_html,
+            'convert_html': self.convert_html
+        }
+        if self.use_api:
+            result = _upload_via_api(access_token=self.access_token, path=self.path, **params)
+            self.path = result['path']
+            return result
+        else:
+            return _upload(
+                tph_uuid=self.tph_uuid,
+                page_id=self.page_id,
+                **params
+            )
+
+    def create_api_token(self, short_name, author_name=None, author_url=None):
+        token_data = create_api_token(short_name, author_name, author_url, self.user_agent)
+        self.access_token = token_data['access_token']
+        return token_data
