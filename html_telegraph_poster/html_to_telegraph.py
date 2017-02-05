@@ -378,9 +378,9 @@ def _upload_via_api(title, author, text, author_url='', access_token=None, user_
 
     params = {
         'access_token': access_token,
-        'title': title,
-        'author_name': author,
-        'author_url': author_url,
+        'title': title[:256],
+        'author_name': author[:128],
+        'author_url': author_url[:512],
         'content': content,
     }
     if path:
