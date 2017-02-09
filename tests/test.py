@@ -473,6 +473,7 @@ Installing setuptools, pip...done.
         <code> multiline_code = True
         next_line = True
         </code>
+        <code></code>empty code
         '''
         self.assertJson(
             [
@@ -520,7 +521,8 @@ Installing setuptools, pip...done.
             [
                 {"tag": "p",
                     "children": ["Text before ", {"tag": "code", "children": [" inline_code = True"]}, " Text after"]},
-                {"tag": "pre", "children": [" multiline_code = True\n        next_line = True\n        "]}
+                {"tag": "pre", "children": [" multiline_code = True\n        next_line = True\n        "]},
+                {'tag': 'p', 'children': [{'tag': 'code'}, 'empty code']}
             ],
             convert_html_to_telegraph_format(html5, clean_html=True)
         )

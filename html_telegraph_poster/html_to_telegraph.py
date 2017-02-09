@@ -229,7 +229,7 @@ def preprocess_fragments(fragments):
     # convert multiline code into pre
     code_elements = body.xpath('.//code')
     for code_element in code_elements:
-        if '\n' in code_element.text:
+        if '\n' in code_element.text_content():
             code_element.tag = 'pre'
 
     for fragment in body.getchildren():
