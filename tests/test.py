@@ -401,6 +401,24 @@ class TelegraphConversionTest(unittest.TestCase):
             convert_html_to_telegraph_format(empty_list, clean_html=True)
         )
 
+    def test_blockquote(self):
+        html = '<blockquote>Text inside blockquote</blockquote>'
+        quote_with_para = '<blockquote><p>first para</p><p>second para</p></blockquote>'
+        quote_para_strong = '<blockquote><p>first para</p><strong>strong text</strong></blockquote>'
+        self.assertJson(
+            [{'children': ['Text inside blockquote'], 'tag': 'blockquote'}],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
+
+        self.assertJson(
+            [{'children': ['first para\nsecond para'], 'tag': 'blockquote'}],
+            convert_html_to_telegraph_format(quote_with_para, clean_html=True)
+        )
+        self.assertJson(
+            [{'children': ['first para\n', {u'children': [u'strong text'], u'tag': u'strong'}], 'tag': 'blockquote'}],
+            convert_html_to_telegraph_format(quote_para_strong, clean_html=True)
+        )
+
     def test_convert_without_clean(self):
         # multiple br tags should be replaced with one line break
         html = 'Text first line' \

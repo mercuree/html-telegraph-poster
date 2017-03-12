@@ -260,6 +260,12 @@ def post_process(body):
         if len(x.text_content().strip()) == 0:
             x.drop_tag()
 
+    paras_inside_quote = body.xpath('//blockquote//p[following-sibling::*]')
+    for para in paras_inside_quote:
+        para.tail = '\n'
+    for para in body.xpath('//blockquote//p'):
+        para.drop_tag()
+
     # group following pre elements into single one (telegraph is buggy)
     join_following_elements(body.xpath('//pre'), join_string="\n")
 
