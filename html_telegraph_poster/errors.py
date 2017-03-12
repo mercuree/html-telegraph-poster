@@ -13,6 +13,10 @@ class TextRequiredError(Error):
     pass
 
 
+class APITokenRequiredError(Error):
+    pass
+
+
 class GetImageRequestError(Error):
     pass
 

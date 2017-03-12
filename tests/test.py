@@ -2,6 +2,7 @@
 import unittest
 from html_telegraph_poster.html_to_telegraph import convert_html_to_telegraph_format
 from html_telegraph_poster.upload_images import upload_image
+from html_telegraph_poster import TelegraphPoster
 import json
 
 
@@ -400,6 +401,24 @@ class TelegraphConversionTest(unittest.TestCase):
             convert_html_to_telegraph_format(empty_list, clean_html=True)
         )
 
+    def test_blockquote(self):
+        html = '<blockquote>Text inside blockquote</blockquote>'
+        quote_with_para = '<blockquote><p>first para</p><p>second para</p></blockquote>'
+        quote_para_strong = '<blockquote><p>first para</p><strong>strong text</strong></blockquote>'
+        self.assertJson(
+            [{'children': ['Text inside blockquote'], 'tag': 'blockquote'}],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
+
+        self.assertJson(
+            [{'children': ['first para\nsecond para'], 'tag': 'blockquote'}],
+            convert_html_to_telegraph_format(quote_with_para, clean_html=True)
+        )
+        self.assertJson(
+            [{'children': ['first para\n', {u'children': [u'strong text'], u'tag': u'strong'}], 'tag': 'blockquote'}],
+            convert_html_to_telegraph_format(quote_para_strong, clean_html=True)
+        )
+
     def test_convert_without_clean(self):
         # multiple br tags should be replaced with one line break
         html = 'Text first line' \
@@ -472,6 +491,7 @@ Installing setuptools, pip...done.
         <code> multiline_code = True
         next_line = True
         </code>
+        <code></code>empty code
         '''
         self.assertJson(
             [
@@ -519,7 +539,8 @@ Installing setuptools, pip...done.
             [
                 {"tag": "p",
                     "children": ["Text before ", {"tag": "code", "children": [" inline_code = True"]}, " Text after"]},
-                {"tag": "pre", "children": [" multiline_code = True\n        next_line = True\n        "]}
+                {"tag": "pre", "children": [" multiline_code = True\n        next_line = True\n        "]},
+                {'tag': 'p', 'children': [{'tag': 'code'}, 'empty code']}
             ],
             convert_html_to_telegraph_format(html5, clean_html=True)
         )
@@ -530,3 +551,45 @@ class UploadImageTest(unittest.TestCase):
     def test_upload(self):
         telegraph_url = upload_image('http://httpbin.org/image/jpeg')
         self.assertIn('https://telegra.ph/file/', telegraph_url)
+
+
+class TelegraphPosterNoApiTest(unittest.TestCase):
+    def test_post(self):
+        t = TelegraphPoster()
+        result = t.post('test_no_api0201', 'unit_test', '<p>first para</p>')
+        self.assertTrue(
+            'url' in result and
+            'path' in result and
+            'tph_uuid' in result and
+            'page_id' in result
+        )
+
+
+class TelegraphPosterApiTest(unittest.TestCase):
+
+    def test_api_token(self):
+        t = TelegraphPoster(use_api=True)
+        result = t.create_api_token('teleposter_test', 'tele_author_test')
+        self.assertEqual(
+            'teleposter_test',
+            result['short_name']
+        )
+        self.assertEqual(
+            'tele_author_test',
+            result['author_name']
+        )
+
+    def test_api(self):
+        html = '<p>test paragraph</p>'
+        t = TelegraphPoster(use_api=True)
+        t.create_api_token('test_token')
+        result = t.post('test_page0201', 'au', html)
+        self.assertTrue('url' in result)
+        self.assertTrue('path' in result)
+        result2 = t.edit('test_edit_page04', 'au_edit', '<p>edit test</p>')
+        self.assertTrue('url' in result)
+        self.assertTrue('path' in result)
+        self.assertEqual(
+            result['path'],
+            result2['path']
+        )
