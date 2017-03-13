@@ -256,7 +256,7 @@ def preprocess_fragments(fragments):
     for image in images_to_wrap:
         _wrap_figure(image)
 
-    return len(body.getchildren()) and body or None
+    return body if len(body.getchildren()) else None
 
 
 def post_process(body):
