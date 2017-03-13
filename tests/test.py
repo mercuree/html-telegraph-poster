@@ -419,6 +419,18 @@ class TelegraphConversionTest(unittest.TestCase):
             convert_html_to_telegraph_format(quote_para_strong, clean_html=True)
         )
 
+    def test_bad_para(self):
+        html = '<aside><p>text inside para</p><p>another para</p></aside>'
+        html2 = '<figure><figcaption><p>text inside para</p><p>another para</p></figcaption></figure>'
+        self.assertJson(
+            [{'children': ['text inside para\nanother para'], 'tag': 'aside'}],
+            convert_html_to_telegraph_format(html, clean_html=True)
+        )
+        self.assertJson(
+            [{'children': [{'children': ['text inside para\nanother para'], 'tag': 'figcaption'}], 'tag': 'figure'}],
+            convert_html_to_telegraph_format(html2, clean_html=True)
+        )
+
     def test_convert_without_clean(self):
         # multiple br tags should be replaced with one line break
         html = 'Text first line' \

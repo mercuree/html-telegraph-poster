@@ -206,6 +206,13 @@ def preprocess_fragments(fragments):
 
     body = fragments[0].getparent()
 
+    # remove para inside blockquote/aside/figure  (telegraph removes it anyway) and replace with line-break
+    paras_inside_quote = body.xpath('.//*[self::blockquote|self::aside|self::figure]//p[following-sibling::*]')
+    for para in paras_inside_quote:
+        para.tail = '\n'
+
+    bad_tags.extend(body.xpath('.//*[self::blockquote|self::aside]//p'))
+
     # bad iframes
     ns = {'re': "http://exslt.org/regular-expressions"}
     bad_tags.extend(fragments[-1].xpath("//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
@@ -259,12 +266,6 @@ def post_process(body):
     for x in bad_tags:
         if len(x.text_content().strip()) == 0:
             x.drop_tag()
-
-    paras_inside_quote = body.xpath('//blockquote//p[following-sibling::*]')
-    for para in paras_inside_quote:
-        para.tail = '\n'
-    for para in body.xpath('//blockquote//p'):
-        para.drop_tag()
 
     # group following pre elements into single one (telegraph is buggy)
     join_following_elements(body.xpath('//pre'), join_string="\n")
