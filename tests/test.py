@@ -422,6 +422,7 @@ class TelegraphConversionTest(unittest.TestCase):
     def test_bad_para(self):
         html = '<aside><p>text inside para</p><p>another para</p></aside>'
         html2 = '<figure><figcaption><p>text inside para</p><p>another para</p></figcaption></figure>'
+        html3 = '<blockquote><p></p><p>second para</p></blockquote>'
         self.assertJson(
             [{'children': ['text inside para\nanother para'], 'tag': 'aside'}],
             convert_html_to_telegraph_format(html, clean_html=True)
@@ -429,6 +430,10 @@ class TelegraphConversionTest(unittest.TestCase):
         self.assertJson(
             [{'children': [{'children': ['text inside para\nanother para'], 'tag': 'figcaption'}], 'tag': 'figure'}],
             convert_html_to_telegraph_format(html2, clean_html=True)
+        )
+        self.assertJson(
+            [{'children': ['second para'], 'tag': 'blockquote'}],
+            convert_html_to_telegraph_format(html3, clean_html=True)
         )
 
     def test_convert_without_clean(self):

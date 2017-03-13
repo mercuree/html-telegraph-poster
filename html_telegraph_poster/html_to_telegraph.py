@@ -207,7 +207,7 @@ def preprocess_fragments(fragments):
     body = fragments[0].getparent()
 
     # remove para inside blockquote/aside/figure  (telegraph removes it anyway) and replace with line-break
-    paras_inside_quote = body.xpath('.//*[self::blockquote|self::aside|self::figure]//p[following-sibling::*]')
+    paras_inside_quote = body.xpath('.//*[self::blockquote|self::aside|self::figure]//p[text()][following-sibling::*]')
     for para in paras_inside_quote:
         para.tail = '\n'
 
