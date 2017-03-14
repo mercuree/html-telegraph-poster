@@ -148,8 +148,12 @@ def preprocess_media_tags(element):
         elif element.tag == 'li':
             # ignore spaces after </li>
             element.tail = ''
-        elif element.tag == 'iframe' and element.get('src'):
+        elif element.tag == 'iframe':
             iframe_src = element.get('src')
+            if not iframe_src:
+                element.drop_tag()
+                return
+
             youtube = re.match(youtube_re, iframe_src)
             vimeo = re.match(vimeo_re, iframe_src)
             if youtube or vimeo:
@@ -161,6 +165,8 @@ def preprocess_media_tags(element):
 
                 if not len(element.xpath('./ancestor::figure')):
                     _wrap_figure(element)
+            else:
+                element.drop_tag()
 
         elif element.tag == 'blockquote' and element.get('class') == 'twitter-tweet':
             twitter_links = element.xpath('.//a')
@@ -213,9 +219,6 @@ def preprocess_fragments(fragments):
 
     bad_tags.extend(body.xpath('.//*[self::blockquote|self::aside]//p'))
 
-    # bad iframes
-    ns = {'re': "http://exslt.org/regular-expressions"}
-    bad_tags.extend(body.xpath(".//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
     # figcaption may have only text content
     bad_tags.extend(body.xpath(".//figcaption//*"))
 
