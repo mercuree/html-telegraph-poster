@@ -16,6 +16,8 @@ allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'code', 'em', 'figcaption
                 'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'u', 'ul', 'video']
 allowed_top_level_tags = ['aside', 'blockquote', 'pre', 'figure', 'h3', 'h4', 'hr', 'ol', 'p', 'ul']
 
+elements_with_text = ['a', 'aside', 'b', 'blockquote', 'em', 'h3', 'h4', 'p', 'strong']
+
 youtube_re = r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/'
 vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
@@ -210,7 +212,7 @@ def preprocess_fragments(fragments):
     body = fragments[0].getparent()
 
     # remove para inside blockquote/aside/figure  (telegraph removes it anyway) and replace with line-break
-    paras_inside_quote = body.xpath('.//*[self::blockquote|self::aside|self::figure]//p[text()][following-sibling::*]')
+    paras_inside_quote = body.xpath('.//*[self::blockquote|self::aside|self::figure]//p[text()][following-sibling::*[text()]]')
     for para in paras_inside_quote:
         para.tail = '\n'
 
@@ -262,7 +264,8 @@ def preprocess_fragments(fragments):
 
 def post_process(body):
 
-    bad_tags = body.xpath('.//p|.//a')
+    elements_not_empty = './/*[%s]' % '|'.join(['self::' + x for x in elements_with_text])
+    bad_tags = body.xpath(elements_not_empty)
 
     for x in bad_tags:
         if len(x.text_content().strip()) == 0:
