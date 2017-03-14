@@ -262,14 +262,14 @@ def preprocess_fragments(fragments):
 
 def post_process(body):
 
-    bad_tags = body.xpath('//p|//a')
+    bad_tags = body.xpath('.//p|.//a')
 
     for x in bad_tags:
         if len(x.text_content().strip()) == 0:
             x.drop_tag()
 
     # group following pre elements into single one (telegraph is buggy)
-    join_following_elements(body.xpath('//pre'), join_string="\n")
+    join_following_elements(body.xpath('.//pre'), join_string="\n")
 
     # remove class attributes for all
     elements_with_class = body.xpath('.//*[@class]')
