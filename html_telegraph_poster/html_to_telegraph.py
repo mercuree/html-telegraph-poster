@@ -150,9 +150,6 @@ def preprocess_media_tags(element):
             element.tail = ''
         elif element.tag == 'iframe':
             iframe_src = element.get('src')
-            if not iframe_src:
-                element.drop_tag()
-                return
 
             youtube = re.match(youtube_re, iframe_src)
             vimeo = re.match(vimeo_re, iframe_src)
@@ -218,6 +215,9 @@ def preprocess_fragments(fragments):
         para.tail = '\n'
 
     bad_tags.extend(body.xpath('.//*[self::blockquote|self::aside]//p'))
+
+    # remove empty iframes
+    bad_tags.extend(body.xpath('.//iframe[not(@src)]'))
 
     # figcaption may have only text content
     bad_tags.extend(body.xpath(".//figcaption//*"))
