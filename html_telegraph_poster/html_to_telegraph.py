@@ -215,22 +215,20 @@ def preprocess_fragments(fragments):
 
     # bad iframes
     ns = {'re': "http://exslt.org/regular-expressions"}
-    bad_tags.extend(fragments[-1].xpath("//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
+    bad_tags.extend(body.xpath(".//iframe[not(re:test(@src, '%s|%s', 'i'))]" % (youtube_re, vimeo_re), namespaces=ns))
     # figcaption may have only text content
-    bad_tags.extend(fragments[-1].xpath("//figcaption//*"))
+    bad_tags.extend(body.xpath(".//figcaption//*"))
 
     # drop all tags inside pre
-    bad_tags.extend(fragments[-1].xpath("//pre//*"))
+    bad_tags.extend(body.xpath(".//pre//*"))
 
     # bad lists (remove lists/list items if empty)
-    nodes_not_to_be_empty = fragments[-1].xpath('//ul|//ol|//li')
+    nodes_not_to_be_empty = body.xpath('.//ul|.//ol|.//li')
     bad_tags.extend([x for x in nodes_not_to_be_empty if len(x.text_content().strip()) == 0])
     # remove links with images inside
     bad_tags.extend(body.xpath('.//a[descendant::img]'))
     for bad_tag in bad_tags:
         bad_tag.drop_tag()
-        if bad_tag in fragments:
-            fragments.remove(bad_tag)
 
     # code - > pre
     # convert multiline code into pre
