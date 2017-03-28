@@ -22,7 +22,7 @@ youtube_re = r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/'
 vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
 pre_content_re = re.compile(r'<(pre|code)(>|\s[^>]*>)[\s\S]*?</\1>')
-line_breaks_and_empty_strings = re.compile('(^[\s\t]*)?\r?\n', flags=re.MULTILINE)
+line_breaks_and_empty_strings = re.compile('(\s{2,}|\s*\r?\n\s*)')
 
 
 def clean_article_html(html_string):
@@ -60,6 +60,9 @@ def replace_line_breaks_except_pre(html_string):
     pre_ranges = [0]
     out = ''
 
+    # replace non-breaking space with usual space
+    html_string = html_string.replace('\u00A0', ' ')
+
     # get <pre> start/end postion
     for x in pre_content_re.finditer(html_string):
         start, end = x.start(), x.end()
@@ -72,7 +75,7 @@ def replace_line_breaks_except_pre(html_string):
         if k % 2 == 0:
             out += part
         else:
-            out += line_breaks_and_empty_strings.sub('', part)
+            out += line_breaks_and_empty_strings.sub(' ', part)
     return out
 
 

@@ -36,7 +36,7 @@ class TelegraphConversionTest(unittest.TestCase):
         '''
         self.assertJson(
             [
-                {"children": ["text as first child node    "], "tag": "p"},
+                {"children": ["text as first child node "], "tag": "p"},
                 {"children": [" Text Header "], "tag": "h3"},
                 {"children": [" Text Para"], "tag": "p"}
              ],
@@ -147,9 +147,9 @@ class TelegraphConversionTest(unittest.TestCase):
 
         self.assertJson(
             [
-                {"tag": "p", "children": [" abc  "]},
+                {"tag": "p", "children": [" abc "]},
                 {"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "image1.jpg"}}]},
-                {"tag": "p", "children": ["xyz  "]}
+                {"tag": "p", "children": ["xyz "]}
             ],
             convert_html_to_telegraph_format(para_with_text, clean_html=True)
         )
