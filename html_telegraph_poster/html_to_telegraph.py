@@ -235,7 +235,7 @@ def preprocess_fragments(fragments):
     bad_tags.extend([x for x in nodes_not_to_be_empty if len(x.text_content().strip()) == 0])
     # remove links with images inside
     bad_tags.extend(body.xpath('.//a[descendant::img]'))
-    for bad_tag in bad_tags:
+    for bad_tag in set(bad_tags):
         bad_tag.drop_tag()
 
     # code - > pre

@@ -572,6 +572,14 @@ Installing setuptools, pip...done.
             convert_html_to_telegraph_format(html5, clean_html=True)
         )
 
+    def test_duplicated_bad_tags(self):
+        # paragraph appears twice in bad_tags list
+        text = '<aside><figure><figcaption><p>Text</p></figcaption></figure></aside>'
+        self.assertJson(
+            [{'children': [{'children': ['Text'], 'tag': 'figcaption'}], 'tag': 'figure'}],
+            convert_html_to_telegraph_format(text, clean_html=True)
+        )
+
 
 class UploadImageTest(unittest.TestCase):
 
