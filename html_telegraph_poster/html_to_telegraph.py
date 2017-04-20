@@ -159,6 +159,7 @@ def preprocess_media_tags(element):
             youtube = re.match(youtube_re, iframe_src)
             vimeo = re.match(vimeo_re, iframe_src)
             if youtube or vimeo:
+                element.text = ''  # ignore any legacy text
                 if youtube:
                     yt_id = urlparse(iframe_src).path.replace('/embed/', '')
                     element.set('src', '/embed/youtube?url=' + quote_plus('https://www.youtube.com/watch?v=' + yt_id))

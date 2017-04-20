@@ -258,7 +258,7 @@ class TelegraphConversionTest(unittest.TestCase):
 
     def test_iframe(self):
         # multiple br tags should be replaced with one line break
-        html = '<iframe src="//www.youtube.com/embed/abcdef"></iframe>'
+        html = '<iframe src="//www.youtube.com/embed/abcdef">legacy text</iframe>'
         iframe_empty_src = '<iframe src=""></iframe>'
         iframe_no_src = '<iframe></iframe>'
         iframe_child_no_src = '<p><iframe></iframe></p>'
