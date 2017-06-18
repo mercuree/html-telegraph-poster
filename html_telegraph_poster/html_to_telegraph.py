@@ -23,6 +23,7 @@ vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
 pre_content_re = re.compile(r'<(pre|code)(>|\s[^>]*>)[\s\S]*?</\1>')
 line_breaks_and_empty_strings = re.compile('(\s{2,}|\s*\r?\n\s*)')
+header_re = re.compile(r'<head[^a-z][\s\S]*</head>')
 
 
 def clean_article_html(html_string):
@@ -31,6 +32,9 @@ def clean_article_html(html_string):
     # telegram will convert <b> anyway
     html_string = re.sub(r'<(/?)b(?=\s|>)', r'<\1strong', html_string)
     html_string = re.sub(r'<(/?)(h2|h5|h6)', r'<\1h4', html_string)
+
+    # remove <head> if present (can't do this with Cleaner)
+    html_string = header_re.sub('', html_string)
 
     c = Cleaner(
         allow_tags=allowed_tags,

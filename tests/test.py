@@ -580,6 +580,14 @@ Installing setuptools, pip...done.
             convert_html_to_telegraph_format(text, clean_html=True)
         )
 
+    def test_remove_head(self):
+        text = '<!doctype html>' \
+               '<html><head><title>Title text</title></head><body><p>Para text</p></body></html>'
+        self.assertJson(
+            [{'children': ['Para text'], 'tag': 'p'}],
+            convert_html_to_telegraph_format(text, clean_html=True)
+        )
+
 
 class UploadImageTest(unittest.TestCase):
 
