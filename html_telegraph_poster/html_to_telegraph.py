@@ -146,6 +146,11 @@ def _fragments_from_string(html_string):
         fragments.pop(0)
         if not len(fragments):
             return []
+
+    # remove xml instructions (if cleaning is disabled)
+    for instruction in fragments[0].xpath('//processing-instruction()'):
+        instruction.drop_tag()
+
     return fragments
 
 

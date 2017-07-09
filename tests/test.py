@@ -588,6 +588,13 @@ Installing setuptools, pip...done.
             convert_html_to_telegraph_format(text, clean_html=True)
         )
 
+    def test_remove_processing_instructions(self):
+        text = '<p>text<?xml version=”1.0″ encoding=”UTF-8″?></p>'
+        self.assertJson(
+            [{'children': ['text'], 'tag': 'p'}],
+            convert_html_to_telegraph_format(text, clean_html=False)
+        )
+
 
 class UploadImageTest(unittest.TestCase):
 
@@ -636,3 +643,4 @@ class TelegraphPosterApiTest(unittest.TestCase):
             result['path'],
             result2['path']
         )
+
