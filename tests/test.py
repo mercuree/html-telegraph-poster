@@ -351,7 +351,8 @@ class TelegraphConversionTest(unittest.TestCase):
         <blockquote class="twitter-tweet"><p>
         <a href="https://twitter.com/JoshConstine">@JoshConstine</a>
         <a href="https://twitter.com/TechCrunch">@TechCrunch</a> The distribution of games</p>
-        <a href="https://twitter.com/durov/status/803680844200210432"></a></blockquote>
+        <a href="https://twitter.com/durov/status/803680844200210432"></a>
+        <a name="no_href"></a></blockquote>
         '''
         self.assertJson(
             [

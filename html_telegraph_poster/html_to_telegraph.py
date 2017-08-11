@@ -181,7 +181,7 @@ def preprocess_media_tags(element):
                 element.drop_tag()
 
         elif element.tag == 'blockquote' and element.get('class') == 'twitter-tweet':
-            twitter_links = element.xpath('.//a')
+            twitter_links = element.xpath('.//a[@href]')
             for tw_link in twitter_links:
                 if twitter_re.match(tw_link.get('href')):
                     twitter_frame = html.HtmlElement()
