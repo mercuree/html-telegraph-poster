@@ -322,7 +322,7 @@ def _recursive_convert(element):
     return fragment_root_element
 
 
-def convert_html_to_telegraph_format(html_string, clean_html=True):
+def convert_html_to_telegraph_format(html_string, clean_html=True, output_format="json_string"):
     if clean_html:
         html_string = clean_article_html(html_string)
 
@@ -343,7 +343,12 @@ def convert_html_to_telegraph_format(html_string, clean_html=True):
     if body is not None:
         content = [_recursive_convert(x) for x in body.iterchildren()]
 
-    return json.dumps(content, ensure_ascii=False)
+    if output_format == 'json_string':
+        return json.dumps(content, ensure_ascii=False)
+    elif output_format == 'python_list':
+        return content
+    elif output_format == 'html_string':
+        return html.tostring(body, encoding='unicode')
 
 
 def _upload(title, author, text,
