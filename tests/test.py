@@ -136,6 +136,9 @@ class TelegraphConversionTest(unittest.TestCase):
         para_with_figure = '<p> <figure> <img src="image0.jpg"/> <figcaption>test</figcaption></figure> </p>'
         para_img1 = '<p>Text 1 <figure> <img src="image0.jpg"/> <figcaption><em>test</em></figcaption></figure> </p><p>Text 2<p>'
         para_img2 = '<p> Text 1 <img src="image0.jpg"/>Text after image </p><p>Text 2 </p>'
+        para_img3 = '<p> Text <img src="  data:image/png;base64,' \
+                    'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHw' \
+                    'AAAABJRU5ErkJggg=="/></p>'
         self.assertJson(
             [
                 {"children": [{"attrs": {"src": "image0.jpg"}, "tag": "img"}], "tag": "figure"},
@@ -181,6 +184,10 @@ class TelegraphConversionTest(unittest.TestCase):
                 {"tag": "p", "children": ["Text after image "]}, {"tag": "p", "children": ["Text 2 "]}
              ],
             convert_html_to_telegraph_format(para_img2, clean_html=True)
+        )
+        self.assertJson(
+            [{'children': [' Text '], 'tag': 'p'}],
+            convert_html_to_telegraph_format(para_img3, clean_html=True)
         )
 
     def test_image_tag_at_the_top(self):

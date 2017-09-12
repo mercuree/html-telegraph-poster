@@ -234,6 +234,9 @@ def preprocess_fragments(fragments):
     # remove empty iframes
     bad_tags.extend(body.xpath('.//iframe[not(@src)]'))
 
+    # remove images with data URIs
+    bad_tags.extend(body.xpath('.//img[starts-with(normalize-space(@src), "data:")]'))
+
     # figcaption may have only text content
     bad_tags.extend(body.xpath(".//figcaption//*"))
 
