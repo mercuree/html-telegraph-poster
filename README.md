@@ -39,3 +39,16 @@ Hard way:
 {'url': u'https://telegra.ph/Just-another-funny-joke-12-05', u'path': u'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCF*********', u'page_id': u'a381b2********'}
 
 ```
+
+## Uploading images
+```python
+
+from html_telegraph_poster.upload_images import upload_image
+
+# upload file
+upload_image("file_path.jpg")
+
+#upload url
+upload_image("http://example.com/img.png")
+
+```
