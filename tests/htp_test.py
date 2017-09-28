@@ -608,7 +608,7 @@ class UploadImageTest(unittest.TestCase):
 
     def test_upload(self):
         telegraph_url = upload_image('http://httpbin.org/image/jpeg')
-        self.assertIn('https://telegra.ph/file/', telegraph_url)
+        self.assertIn('http://telegra.ph/file/', telegraph_url)
 
 
 class TelegraphPosterNoApiTest(unittest.TestCase):

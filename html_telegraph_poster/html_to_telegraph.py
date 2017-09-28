@@ -8,7 +8,7 @@ from requests.compat import urlparse, quote_plus
 from requests_toolbelt import MultipartEncoder
 from .errors import *
 
-base_url = 'https://telegra.ph'
+base_url = 'http://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 api_url = 'https://api.telegra.ph'
 default_user_agent = 'Python_telegraph_poster/0.1'

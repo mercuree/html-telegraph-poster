@@ -3,7 +3,7 @@ import re
 import requests
 
 from io import BytesIO
-base_url = 'https://telegra.ph'
+base_url = 'http://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 upload_file_url = 'http://telegra.ph/upload'
 
