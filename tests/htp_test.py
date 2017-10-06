@@ -128,6 +128,13 @@ class TelegraphConversionTest(unittest.TestCase):
             convert_html_to_telegraph_format(html, clean_html=True)
         )
 
+    def test_images(self):
+        images_without_src = '<img title="image"/>'
+        self.assertJson(
+            [],
+            convert_html_to_telegraph_format(images_without_src, clean_html=True)
+        )
+
     def test_image_inside_paragraph(self):
         html = '<p> <img src="image0.jpg"/></p>' \
                '<p>  <span> <img src="image1.jpg"/>   </span> <img src="image2.jpg"/> </p>'

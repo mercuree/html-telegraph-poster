@@ -232,7 +232,7 @@ def preprocess_fragments(fragments):
     bad_tags.extend(body.xpath('.//*[self::blockquote|self::aside]//p'))
 
     # remove empty iframes
-    bad_tags.extend(body.xpath('.//iframe[not(@src)]'))
+    bad_tags.extend(body.xpath('.//iframe[not(@src)]|.//img[not(@src)]'))
 
     # remove images with data URIs
     bad_tags.extend(body.xpath('.//img[starts-with(normalize-space(@src), "data:")]'))
