@@ -43,6 +43,13 @@ class TelegraphConversionTest(unittest.TestCase):
             convert_html_to_telegraph_format(html, clean_html=True)
         )
 
+    def test_text_after_para(self):
+        html = ' <p>text inside para</p> Text after para'
+        self.assertEqual(
+            '<body><p>text inside para</p><p> Text after para</p></body>',
+            convert_html_to_telegraph_format(html, output_format='html_string', clean_html=True)
+        )
+
     def test_em(self):
         html = '<em> Em text </em>'
         # Text node after inline element should be wrapped into single paragraph together with em

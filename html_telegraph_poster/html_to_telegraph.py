@@ -268,8 +268,8 @@ def preprocess_fragments(fragments):
             if fragment.tail and len(fragment.tail.strip()) != 0:
                 paragraph = _create_element('p')
                 paragraph.text = fragment.tail
+                fragment.tail = None
                 fragment.addnext(paragraph)
-                fragment.tail = ''
 
     images_to_wrap = body.xpath('.//img[not(ancestor::figure)]')
     for image in images_to_wrap:
