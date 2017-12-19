@@ -8,9 +8,9 @@ from requests.compat import urlparse, quote_plus
 from requests_toolbelt import MultipartEncoder
 from .errors import *
 
-base_url = 'http://telegra.ph'
-save_url = 'https://edit.telegra.ph/save'
-api_url = 'https://api.telegra.ph'
+base_url = 'http://graph.org'
+save_url = 'https://edit.graph.org/save'
+api_url = 'https://api.graph.org'
 default_user_agent = 'Python_telegraph_poster/0.1'
 allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'code', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i',
                 'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'u', 'ul', 'video']
