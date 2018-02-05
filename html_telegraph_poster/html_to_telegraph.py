@@ -21,6 +21,8 @@ elements_with_text = ['a', 'aside', 'b', 'blockquote', 'em', 'h3', 'h4', 'p', 's
 youtube_re = r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/'
 vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
+telegram_embed_iframe_re = re.compile(r'^(https?)://(t\.me|telegram\.me|telegram\.dog)/([a-zA-Z0-9_]+)/(\d+)', re.IGNORECASE)
+telegram_embed_script_re = re.compile(r'<script(?=[^>]+\sdata-telegram-post=[\'"]([^\'"]+))[^<]+</script>', re.IGNORECASE)
 pre_content_re = re.compile(r'<(pre|code)(>|\s[^>]*>)[\s\S]*?</\1>')
 line_breaks_and_empty_strings = re.compile('(\s{2,}|\s*\r?\n\s*)')
 header_re = re.compile(r'<head[^a-z][\s\S]*</head>')
@@ -32,7 +34,8 @@ def clean_article_html(html_string):
     # telegram will convert <b> anyway
     html_string = re.sub(r'<(/?)b(?=\s|>)', r'<\1strong', html_string)
     html_string = re.sub(r'<(/?)(h2|h5|h6)', r'<\1h4', html_string)
-
+    # convert telegram embed posts before cleaner
+    html_string = re.sub(telegram_embed_script_re, r'<iframe src="https://t.me/\1"></iframe>', html_string)
     # remove <head> if present (can't do this with Cleaner)
     html_string = header_re.sub('', html_string)
 
@@ -167,14 +170,16 @@ def preprocess_media_tags(element):
 
             youtube = re.match(youtube_re, iframe_src)
             vimeo = re.match(vimeo_re, iframe_src)
-            if youtube or vimeo:
+            telegram = re.match(telegram_embed_iframe_re, iframe_src)
+            if youtube or vimeo or telegram:
                 element.text = ''  # ignore any legacy text
                 if youtube:
                     yt_id = urlparse(iframe_src).path.replace('/embed/', '')
                     element.set('src', '/embed/youtube?url=' + quote_plus('https://www.youtube.com/watch?v=' + yt_id))
                 elif vimeo:
                     element.set('src', '/embed/vimeo?url=' + quote_plus('https://vimeo.com/' + vimeo.group(2)))
-
+                elif telegram:
+                    element.set('src', '/embed/telegram?url=' + quote_plus(iframe_src))
                 if not len(element.xpath('./ancestor::figure')):
                     _wrap_figure(element)
             else:

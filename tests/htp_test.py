@@ -287,6 +287,8 @@ class TelegraphConversionTest(unittest.TestCase):
         iframe_text_after = '<p><iframe src="//www.youtube.com/embed/abcdef"></iframe>Text after </p>'
         iframe_not_allowed_src = '<div><iframe src="http://example.com"></iframe></div>'
         iframe_vimeo = '<iframe src="https://player.vimeo.com/video/1185346"></iframe>'
+        iframe_telegram = '<iframe src="https://t.me/tginfo/1220?embed=1"></iframe>'
+        script_telegram = '<script async src="https://telegram.org/js/telegram-widget.js?2" data-telegram-post="tginfo/1220" data-width="100%"></script>'
         mix = iframe_child_no_src + html + iframe_empty_src + iframe_no_src
         iframe_with_figure = '<figure><iframe src="//www.youtube.com/embed/abcdef"></iframe>Text after </figure>'
 
@@ -365,6 +367,22 @@ class TelegraphConversionTest(unittest.TestCase):
                 {"tag": "figure", "children": [{"tag": "iframe", "attrs": {
                  "src": "/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dxyzxyzxyz"}}]}],
             convert_html_to_telegraph_format(multiple_iframes, clean_html=True)
+        )
+
+        self.assertJson(
+            [
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs':
+                    {'src': '/embed/telegram?url=https%3A%2F%2Ft.me%2Ftginfo%2F1220%3Fembed%3D1'}}]}
+            ],
+            convert_html_to_telegraph_format(iframe_telegram, clean_html=True)
+        )
+
+        self.assertJson(
+            [
+                {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs':
+                    {'src': '/embed/telegram?url=https%3A%2F%2Ft.me%2Ftginfo%2F1220'}}]}
+            ],
+            convert_html_to_telegraph_format(script_telegram, clean_html=True)
         )
 
     def test_twitter_links(self):
