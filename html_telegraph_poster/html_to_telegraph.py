@@ -376,7 +376,8 @@ def _upload(title, author, text,
         'title': title,
         'author': author,
         'author_url': author_url,
-        'page_id': page_id or '0'
+        'page_id': page_id or '0',
+        'save_hash': ''
     }
 
     m = MultipartEncoder(fields, boundary='TelegraPhBoundary21')
@@ -384,7 +385,8 @@ def _upload(title, author, text,
     headers = {
         'Content-Type': m.content_type,
         'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'User-Agent': user_agent
+        'User-Agent': user_agent,
+        'Origin': 'http://telegra.ph'
     }
     r = requests.Session()
     r.mount('https://', requests.adapters.HTTPAdapter(max_retries=3))
