@@ -684,3 +684,5 @@ class TelegraphPosterApiTest(unittest.TestCase):
             result2['path']
         )
 
+if __name__ == '__main__':
+    unittest.main()
