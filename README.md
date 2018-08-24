@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/mercuree/html-telegraph-poster.svg?branch=master)](https://travis-ci.org/mercuree/html-telegraph-poster)
 
 # Python html to telegra.ph poster
 
