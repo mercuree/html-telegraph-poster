@@ -1,6 +1,7 @@
 # encoding=utf8
 import json
 import re
+import os
 from lxml import html
 from lxml.html.clean import Cleaner
 import requests
@@ -467,8 +468,12 @@ class TelegraphPoster(object):
         self.user_agent = user_agent
         self.clean_html = clean_html
         self.convert_html = convert_html
+        self.access_token = access_token or os.getenv('TELEGRAPH_ACCESS_TOKEN', None)
+        self.account = None
         self.use_api = use_api
-        self.access_token = access_token
+        if self.access_token:
+            # use api anyway
+            self.use_api = True
 
     def post(self, title, author, text, author_url=''):
         self.title = title
@@ -503,6 +508,17 @@ class TelegraphPoster(object):
             )
 
     def create_api_token(self, short_name, author_name=None, author_url=None):
+        """
+
+        :param short_name: Account name, helps users with several accounts remember which they are currently using.
+            Displayed to the user above the "Edit/Publish" button on Telegra.ph, other users don't see this name.
+        :param author_name: Default author name used when creating new articles.
+        :param author_url: Default profile link, opened when users click on the author's name below the title.
+            Can be any link, not necessarily to a Telegram profile or channel.
+        :return:
+        """
         token_data = create_api_token(short_name, author_name, author_url, self.user_agent)
+        self.use_api = True
+        self.account = token_data
         self.access_token = token_data['access_token']
         return token_data

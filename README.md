@@ -19,19 +19,10 @@ pip install html-telegraph-poster
 ```
 
 ## Usage
-Simple way:
-
-```python
->>> from html_telegraph_poster import upload_to_telegraph
-
->>> upload_to_telegraph(title='Kill all humans?', author='Bill Gates', text='<p>Hello world!</p><p>Good Bye!</p>')
-{'url': u'https://telegra.ph/Kill-all-humans-12-05', u'path': u'Kill-all-humans-12-05', 'tph_uuid': 'FzsYQzhx7LKdG1dx********', u'page_id': u'9e7732a45e**********'}
-
-```
-Hard way:
 ```python
 >>> from html_telegraph_poster import TelegraphPoster
 >>> t = TelegraphPoster()
+>>> t.create_api_token('Elon Musk', 'Elon', 'https://www.spacex.com/') # second and third params are optional
 >>> t.post(title='Just another funny joke', author='by me', text='<blockquote>Really hard way</blockquote>')
 {'url': u'https://telegra.ph/Just-another-funny-joke-12-05', u'path': u'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCFiIBAxk***********', u'page_id': u'a38*************'}
 
@@ -39,6 +30,14 @@ Hard way:
 >>> t.edit(text=t.text + '<p>some text at the end</p>')
 {'url': u'https://telegra.ph/Just-another-funny-joke-12-05', u'path': u'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCF*********', u'page_id': u'a381b2********'}
 
+```
+## Generate persistent access token
+Actually it's a good idea to generate access token and put it inside environment variables.
+This command will generate .env file or append  TELEGRAPH_ACCESS_TOKEN at the end of it.
+Note: script will not set environment variable. You can use [python-dotenv](https://github.com/theskumar/python-dotenv),
+set it manually or hardcode it when call TelegraphPoster(access_token='access_token_string')
+```Shell
+python -m html_telegraph_poster.create_account "Elon Musk" "Elon" "https://www.spacex.com/"
 ```
 
 ## Uploading images
