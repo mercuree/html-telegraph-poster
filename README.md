@@ -23,12 +23,13 @@ pip install html-telegraph-poster
 >>> from html_telegraph_poster import TelegraphPoster
 >>> t = TelegraphPoster()
 >>> t.create_api_token('Elon Musk', 'Elon', 'https://www.spacex.com/') # second and third params are optional
+{'access_token': '9f3bab568f*************', 'auth_url': 'https://edit.telegra.ph/auth/HFYo***********', 'author_name': 'Elon', 'short_name': 'Elon Musk', 'author_url': 'https://www.spacex.com/'}
 >>> t.post(title='Just another funny joke', author='by me', text='<blockquote>Really hard way</blockquote>')
-{'url': u'https://telegra.ph/Just-another-funny-joke-12-05', u'path': u'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCFiIBAxk***********', u'page_id': u'a38*************'}
+{'url': 'https://telegra.ph/Just-another-funny-joke-12-05', 'path': 'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCFiIBAxk***********', 'page_id': 'a38*************'}
 
 # We can modify this article later
 >>> t.edit(text=t.text + '<p>some text at the end</p>')
-{'url': u'https://telegra.ph/Just-another-funny-joke-12-05', u'path': u'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCF*********', u'page_id': u'a381b2********'}
+{'url': 'https://telegra.ph/Just-another-funny-joke-12-05', 'path': 'Just-another-funny-joke-12-05', 'tph_uuid': '4gFlYHCF*********', 'page_id': 'a381b2********'}
 
 ```
 ## Generate persistent access token
