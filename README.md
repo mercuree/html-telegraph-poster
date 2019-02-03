@@ -35,7 +35,7 @@ pip install html-telegraph-poster
 Actually it's a good idea to generate access token and put it inside environment variables.
 This command will generate .env file or append  TELEGRAPH_ACCESS_TOKEN at the end of it.
 Note: script will not set environment variable. You can use [python-dotenv](https://github.com/theskumar/python-dotenv),
-set it manually or hardcode it when call TelegraphPoster(access_token='access_token_string')
+set it manually or hardcode it when call `TelegraphPoster(access_token='access_token_string')`
 ```Shell
 python -m html_telegraph_poster.create_account "Elon Musk" "Elon" "https://www.spacex.com/"
 ```
