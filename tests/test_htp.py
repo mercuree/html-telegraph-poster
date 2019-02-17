@@ -1,6 +1,7 @@
 # coding=utf8
 import unittest
 from html_telegraph_poster.html_to_telegraph import convert_html_to_telegraph_format
+from html_telegraph_poster.html_to_telegraph import convert_json_to_html
 from html_telegraph_poster.upload_images import upload_image
 from html_telegraph_poster import TelegraphPoster
 import json
@@ -635,6 +636,36 @@ Installing setuptools, pip...done.
             convert_html_to_telegraph_format(text, clean_html=False)
         )
 
+    def test_json_to_html(self):
+
+        json_text = '[{"tag":"p","children":["First paragraph text (текст).\\nSecond string "]},' \
+                    '{"tag":"p","children":["Next paragraph"]},{"tag":"figure","children":' \
+                    '[{"tag":"img","attrs":{"src":"\/file\/d12da8bd435240bc3c6d2.jpg"}},' \
+                    '{"tag":"figcaption","children":["Test girl with cat"]}]},' \
+                    '{"tag":"ul","children":[{"tag":"li","children":[{"tag":"strong","children":["Unordered "]},' \
+                    '"list first item"]},{"tag":"li","children":[{"tag":"em","children":["Unordered "]},"list ",' \
+                    '{"tag":"a","attrs":{"href":"\/"},"children":["second "]},"item"]}]},' \
+                    '{"tag":"blockquote","children":["Blockquote text Blockquote text Blockquote text ",' \
+                    '{"tag":"a","attrs":{"href":"https:\/\/telegram.org\/","target":"_blank"},' \
+                    '"children":["Blockquote "]},' \
+                    '"text Blockquote text Blockquote text Blockquote text Blockquote text Blockquote text"]},' \
+                    '{"tag":"h3","attrs":{"id":"Big-Header"},"children":["Big Header"]},' \
+                    '{"tag":"h4","attrs":{"id":"Not-so-big-header"},"children":["Not so big ",' \
+                    '{"tag":"a","attrs":{"href":"https:\/\/telegram.org\/","target":"_blank"},' \
+                    '"children":["header"]}]},{"tag":"pre","children":["Block of code text\\nnew line\\n"]}]'
+
+        html_text = u'<p>First paragraph text (текст).<br/>Second string </p><p>Next paragraph</p><figure>' \
+            '<img src="http://telegra.ph/file/d12da8bd435240bc3c6d2.jpg"><figcaption>Test girl with cat</figcaption>' \
+            '</figure><ul><li><strong>Unordered </strong>list first item</li><li><em>Unordered </em>list ' \
+            '<a href="http://telegra.ph/">second </a>item</li></ul>' \
+            '<blockquote>Blockquote text Blockquote text Blockquote text ' \
+            '<a href="https://telegram.org/" target="_blank">Blockquote </a>' \
+            'text Blockquote text Blockquote text Blockquote text Blockquote text Blockquote text</blockquote>' \
+            '<h3 id="Big-Header">Big Header</h3><h4 id="Not-so-big-header">Not so big ' \
+            '<a href="https://telegram.org/" target="_blank">header</a></h4><pre>Block of code text\nnew line\n</pre>'
+
+        self.assertEqual(convert_json_to_html(json.loads(json_text)), html_text)
+
 
 class UploadImageTest(unittest.TestCase):
 
@@ -683,6 +714,15 @@ class TelegraphPosterApiTest(unittest.TestCase):
             result['path'],
             result2['path']
         )
+
+    def test_get_page(self):
+        t = TelegraphPoster(use_api=True)
+        page = t.get_page('Test-html-telegraph-poster-Page-02-17', return_content=True)
+        self.assertTrue(page['ok'])
+        self.assertEqual(page['result']['title'], 'Test html telegraph poster Page')
+        self.assertEqual(page['result']['path'], 'Test-html-telegraph-poster-Page-02-17')
+        self.assertTrue('content' in page['result'])
+        self.assertTrue('html' in page)
 
 
 if __name__ == '__main__':

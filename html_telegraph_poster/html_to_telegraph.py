@@ -62,7 +62,7 @@ def clean_article_html(html_string):
     return html_string.strip(' \t')
 
 
-def replace_line_breaks_except_pre(html_string):
+def replace_line_breaks_except_pre(html_string, replace_by=' '):
     # Remove all line breaks and empty strings, except pre tag
     # how to make it in one string? :\
     pre_ranges = [0]
@@ -83,7 +83,7 @@ def replace_line_breaks_except_pre(html_string):
         if k % 2 == 0:
             out += part
         else:
-            out += line_breaks_and_empty_strings.sub(' ', part)
+            out += line_breaks_and_empty_strings.sub(replace_by, part)
     return out
 
 
@@ -331,6 +331,36 @@ def _recursive_convert(element):
     return fragment_root_element
 
 
+def _recursive_convert_json(element):
+
+    content = _create_element(element.get('tag'))
+
+    if element.get('attrs'):
+        content.attrib.update(element.get('attrs'))
+    children = element.get('children') or []
+    for child in children:
+        if isinstance(child, basestring):
+            # temporarily wrap text with span tag
+            content.append(_create_element('span', text=child))
+        else:
+            content.append(_recursive_convert_json(child))
+
+    return content
+
+
+def convert_json_to_html(elements):
+    content = html.fragment_fromstring('<div></div>')
+    for element in elements:
+        content.append(_recursive_convert_json(element))
+    content.make_links_absolute(base_url=base_url)
+    for x in content.xpath('.//span'):
+        x.drop_tag()
+    html_string = html.tostring(content, encoding='unicode')
+    html_string = replace_line_breaks_except_pre(html_string, '<br/>')
+    html_string = html_string[5:-6]
+    return html_string
+
+
 def convert_html_to_telegraph_format(html_string, clean_html=True, output_format="json_string"):
     if clean_html:
         html_string = clean_article_html(html_string)
@@ -506,6 +536,24 @@ class TelegraphPoster(object):
                 page_id=self.page_id,
                 **params
             )
+
+    def get_page(self, path, return_content=False):
+        """
+        Use this method to get a Telegraph page. Returns a Page object on success.
+        :param path:  (String) Required. Path to the Telegraph page (in the format Title-12-31, i.e.
+            everything that comes after http://telegra.ph/).
+        :param return_content: (Boolean, default = false) If true, content field will be returned in Page object.
+        :return: Returns a Page object on success
+        """
+        params = {
+            'path': path,
+            'return_content': return_content
+        }
+        resp = requests.get(api_url + '/getPage', params, headers={'User-Agent': self.user_agent})
+        json_response = resp.json()
+        if return_content:
+            json_response['html'] = convert_json_to_html(json_response['result']['content'])
+        return json_response
 
     def create_api_token(self, short_name, author_name=None, author_url=None):
         """
