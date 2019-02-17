@@ -741,6 +741,14 @@ class TelegraphPosterApiTest(unittest.TestCase):
         self.assertEqual(acc_info['result']['short_name'], 'Sandbox')
         self.assertEqual(acc_info['result']['author_url'], 'https://telegram.org/')
 
+    def test_revoke_access_token(self):
+        t = TelegraphPoster(use_api=True)
+        t.create_api_token('SandboxTest', author_url='https://google.com/')
+        old_access_token = t.access_token
+        info = t.revoke_access_token()
+        self.assertTrue(info['ok'])
+        self.assertNotEqual(old_access_token, t.access_token)
+
 
 if __name__ == '__main__':
     unittest.main()

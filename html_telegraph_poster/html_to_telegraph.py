@@ -505,7 +505,7 @@ class TelegraphPoster(object):
             # use api anyway
             self.use_api = True
 
-    def _api_request(self, method, params):
+    def _api_request(self, method, params=None):
         params = params or {}
         if self.access_token:
             params['access_token'] = self.access_token
@@ -571,6 +571,16 @@ class TelegraphPoster(object):
         if author_url:
             params['author_url'] = author_url
         return self._api_request('editAccountInfo', params)
+
+    def revoke_access_token(self):
+        if not self.access_token:
+            raise Exception('Access token is required')
+
+        json_response = self._api_request('revokeAccessToken')
+        if json_response['ok'] is True:
+            self.access_token = json_response['result']['access_token']
+
+        return json_response
 
     def get_page(self, path, return_content=False):
         """
