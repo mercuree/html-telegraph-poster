@@ -688,6 +688,10 @@ class TelegraphPosterNoApiTest(unittest.TestCase):
 
 class TelegraphPosterApiTest(unittest.TestCase):
 
+    def setUp(self):
+        # Access Token from telegra.ph/api page
+        self.sandbox_access_token = 'b968da509bb76866c35425099bc0989a5ec3b32997d55286c657e6994bbb'
+
     def test_api_token(self):
         t = TelegraphPoster(use_api=True)
         result = t.create_api_token('teleposter_test', 'tele_author_test')
@@ -702,8 +706,7 @@ class TelegraphPosterApiTest(unittest.TestCase):
 
     def test_api(self):
         html = '<p>test paragraph</p>'
-        t = TelegraphPoster(use_api=True)
-        t.create_api_token('test_token')
+        t = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token)
         result = t.post('test_page0201', 'au', html)
         self.assertTrue('url' in result)
         self.assertTrue('path' in result)
@@ -723,6 +726,20 @@ class TelegraphPosterApiTest(unittest.TestCase):
         self.assertEqual(page['result']['path'], 'Test-html-telegraph-poster-Page-02-17')
         self.assertTrue('content' in page['result'])
         self.assertTrue('html' in page)
+
+    def test_get_account_info(self):
+        t = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token)
+        acc_info = t.get_account_info(fields=['short_name', 'author_url', 'page_count'])
+        self.assertTrue('page_count' in acc_info['result'])
+        self.assertEqual(acc_info['result']['short_name'], 'Sandbox')
+        self.assertEqual(acc_info['result']['author_url'], 'https://2ch.hk/b/')
+
+    def test_edit_account_info(self):
+        t = TelegraphPoster(use_api=True)
+        t.create_api_token('SandboxTest', author_url='https://google.com/')
+        acc_info = t.edit_account_info(short_name='Sandbox', author_name='aaa', author_url='https://telegram.org/')
+        self.assertEqual(acc_info['result']['short_name'], 'Sandbox')
+        self.assertEqual(acc_info['result']['author_url'], 'https://telegram.org/')
 
 
 if __name__ == '__main__':

@@ -505,6 +505,13 @@ class TelegraphPoster(object):
             # use api anyway
             self.use_api = True
 
+    def _api_request(self, method, params):
+        params = params or {}
+        if self.access_token:
+            params['access_token'] = self.access_token
+        resp = requests.get(api_url + '/' + method, params, headers={'User-Agent': self.user_agent})
+        return resp.json()
+
     def post(self, title, author, text, author_url=''):
         self.title = title
         self.author = author
@@ -537,6 +544,34 @@ class TelegraphPoster(object):
                 **params
             )
 
+    def get_account_info(self, fields=None):
+        """
+        Use this method to get information about a Telegraph account.
+        :param fields: (Array of String, default = ['short_name','author_name','author_url'])
+        List of account fields to return. Available fields: short_name, author_name, author_url, auth_url, page_count.
+        :return: Returns an Account object on success.
+        """
+
+        if not self.access_token:
+            raise Exception('Access token is required')
+
+        json_response = self._api_request('getAccountInfo', {
+            'fields': json.dumps(fields) if fields else ''
+        })
+        return json_response
+
+    def edit_account_info(self, short_name, author_name='', author_url=''):
+        if not self.access_token:
+            raise Exception('Access token is required')
+        params = {
+            'short_name': short_name
+        }
+        if author_name:
+            params['author_name'] = author_name
+        if author_url:
+            params['author_url'] = author_url
+        return self._api_request('editAccountInfo', params)
+
     def get_page(self, path, return_content=False):
         """
         Use this method to get a Telegraph page. Returns a Page object on success.
@@ -545,12 +580,10 @@ class TelegraphPoster(object):
         :param return_content: (Boolean, default = false) If true, content field will be returned in Page object.
         :return: Returns a Page object on success
         """
-        params = {
+        json_response = self._api_request('getPage', {
             'path': path,
             'return_content': return_content
-        }
-        resp = requests.get(api_url + '/getPage', params, headers={'User-Agent': self.user_agent})
-        json_response = resp.json()
+        })
         if return_content:
             json_response['html'] = convert_json_to_html(json_response['result']['content'])
         return json_response
