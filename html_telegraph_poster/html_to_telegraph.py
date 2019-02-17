@@ -598,6 +598,15 @@ class TelegraphPoster(object):
             json_response['html'] = convert_json_to_html(json_response['result']['content'])
         return json_response
 
+    def get_views(self, path, year=None, month=None, day=None, hour=None):
+        return self._api_request('getViews', {
+            'path': path,
+            'year': year,
+            'month': month,
+            'day': day,
+            'hour': hour
+        })
+
     def create_api_token(self, short_name, author_name=None, author_url=None):
         """
 

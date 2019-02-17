@@ -749,6 +749,11 @@ class TelegraphPosterApiTest(unittest.TestCase):
         self.assertTrue(info['ok'])
         self.assertNotEqual(old_access_token, t.access_token)
 
+    def test_get_views(self):
+        t = TelegraphPoster(use_api=True)
+        info = t.get_views('api')
+        self.assertTrue('views' in info['result'])
+
 
 if __name__ == '__main__':
     unittest.main()
