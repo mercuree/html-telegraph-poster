@@ -339,7 +339,7 @@ def _recursive_convert_json(element):
         content.attrib.update(element.get('attrs'))
     children = element.get('children') or []
     for child in children:
-        if isinstance(child, basestring):
+        if not isinstance(child, (dict, list)):
             # temporarily wrap text with span tag
             content.append(_create_element('span', text=child))
         else:
