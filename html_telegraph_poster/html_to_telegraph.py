@@ -335,8 +335,11 @@ def _recursive_convert_json(element):
 
     content = _create_element(element.get('tag'))
 
-    if element.get('attrs'):
-        content.attrib.update(element.get('attrs'))
+    attributes = element.get('attrs')
+    if attributes:
+        # preserve order to conform the tests
+        for attr in [(key, attributes[key]) for key in sorted(attributes.keys())]:
+            content.set(attr[0], attr[1])
     children = element.get('children') or []
     for child in children:
         if not isinstance(child, (dict, list)):
