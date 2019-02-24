@@ -721,38 +721,42 @@ class TelegraphPosterApiTest(unittest.TestCase):
     def test_get_page(self):
         t = TelegraphPoster(use_api=True)
         page = t.get_page('Test-html-telegraph-poster-Page-02-17', return_content=True)
-        self.assertTrue(page['ok'])
-        self.assertEqual(page['result']['title'], 'Test html telegraph poster Page')
-        self.assertEqual(page['result']['path'], 'Test-html-telegraph-poster-Page-02-17')
-        self.assertTrue('content' in page['result'])
+        self.assertEqual(page['title'], 'Test html telegraph poster Page')
+        self.assertEqual(page['path'], 'Test-html-telegraph-poster-Page-02-17')
+        self.assertTrue('content' in page)
         self.assertTrue('html' in page)
 
     def test_get_account_info(self):
         t = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token)
         acc_info = t.get_account_info(fields=['short_name', 'author_url', 'page_count'])
-        self.assertTrue('page_count' in acc_info['result'])
-        self.assertEqual(acc_info['result']['short_name'], 'Sandbox')
-        self.assertEqual(acc_info['result']['author_url'], 'https://2ch.hk/b/')
+        self.assertTrue('page_count' in acc_info)
+        self.assertEqual(acc_info['short_name'], 'Sandbox')
+        self.assertEqual(acc_info['author_url'], 'https://2ch.hk/b/')
 
     def test_edit_account_info(self):
         t = TelegraphPoster(use_api=True)
         t.create_api_token('SandboxTest', author_url='https://google.com/')
         acc_info = t.edit_account_info(short_name='Sandbox', author_name='aaa', author_url='https://telegram.org/')
-        self.assertEqual(acc_info['result']['short_name'], 'Sandbox')
-        self.assertEqual(acc_info['result']['author_url'], 'https://telegram.org/')
+        self.assertEqual(acc_info['short_name'], 'Sandbox')
+        self.assertEqual(acc_info['author_url'], 'https://telegram.org/')
 
     def test_revoke_access_token(self):
         t = TelegraphPoster(use_api=True)
         t.create_api_token('SandboxTest', author_url='https://google.com/')
         old_access_token = t.access_token
-        info = t.revoke_access_token()
-        self.assertTrue(info['ok'])
+        t.revoke_access_token()
         self.assertNotEqual(old_access_token, t.access_token)
 
     def test_get_views(self):
         t = TelegraphPoster(use_api=True)
         info = t.get_views('api')
-        self.assertTrue('views' in info['result'])
+        self.assertTrue('views' in info)
+
+    def test_get_page_list(self):
+        t = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token)
+        info = t.get_page_list(offset=5, limit=19)
+        self.assertTrue('pages' in info)
+        self.assertEqual(19, len(info['pages']))
 
 
 if __name__ == '__main__':

@@ -551,16 +551,24 @@ class TelegraphPoster(object):
         List of account fields to return. Available fields: short_name, author_name, author_url, auth_url, page_count.
         :return: Returns an Account object on success.
         """
-
         if not self.access_token:
             raise Exception('Access token is required')
 
-        json_response = self._api_request('getAccountInfo', {
+        return self._api_request('getAccountInfo', {
             'fields': json.dumps(fields) if fields else ''
-        })
-        return json_response
+        }).get('result')
 
     def edit_account_info(self, short_name, author_name='', author_url=''):
+        """
+            Use this method to update information about a Telegraph account.
+            Pass only the parameters that you want to edit
+        :param short_name: (String, 1-32 characters) New account name.
+        :param author_name: (String, 0-128 characters) New default author name used when creating new articles.
+        :param author_url: (String, 0-512 characters) New default profile link, opened when users click on the
+            author's name below the title.
+            Can be any link, not necessarily to a Telegram profile or channel.
+        :return:  Account object with the default fields.
+        """
         if not self.access_token:
             raise Exception('Access token is required')
         params = {
@@ -570,17 +578,7 @@ class TelegraphPoster(object):
             params['author_name'] = author_name
         if author_url:
             params['author_url'] = author_url
-        return self._api_request('editAccountInfo', params)
-
-    def revoke_access_token(self):
-        if not self.access_token:
-            raise Exception('Access token is required')
-
-        json_response = self._api_request('revokeAccessToken')
-        if json_response['ok'] is True:
-            self.access_token = json_response['result']['access_token']
-
-        return json_response
+        return self._api_request('editAccountInfo', params).get('result')
 
     def get_page(self, path, return_content=False):
         """
@@ -595,30 +593,91 @@ class TelegraphPoster(object):
             'return_content': return_content
         })
         if return_content:
-            json_response['html'] = convert_json_to_html(json_response['result']['content'])
-        return json_response
+            json_response['result']['html'] = convert_json_to_html(json_response['result']['content'])
+        return json_response.get('result')
+
+    def get_page_list(self, offset=0, limit=50):
+        """
+            Use this method to get a list of pages belonging to a Telegraph account.
+        :param offset: Sequential number of the first page to be returned.
+        :param limit: Limits the number of pages to be retrieved.
+        :return: PageList object, sorted by most recently created pages first.
+        """
+        json_response = self._api_request('getPageList', {
+            'offset': offset,
+            'limit': limit
+        })
+        return json_response.get('result')
 
     def get_views(self, path, year=None, month=None, day=None, hour=None):
+        """
+            Use this method to get the number of views for a Telegraph article.
+        :param path: Required. Path to the Telegraph page (in the format Title-12-31, where 12 is the month and 31 the
+            day the article was first published).
+        :param year: Required if month is passed. If passed, the number of page views for the requested year will be
+            returned.
+        :param month: Required if day is passed. If passed, the number of page views for the requested month will be
+            returned.
+        :param day: Required if hour is passed. If passed, the number of page views for the requested day will be
+            returned.
+        :param hour: If passed, the number of page views for the requested hour will be returned.
+        :return: Returns a PageViews object on success. By default, the total number of page views will be returned.
+        """
         return self._api_request('getViews', {
             'path': path,
             'year': year,
             'month': month,
             'day': day,
             'hour': hour
-        })
+        }).get('result')
 
     def create_api_token(self, short_name, author_name=None, author_url=None):
         """
-
+            Use this method to create a new Telegraph account.
+            Most users only need one account, but this can be useful for channel administrators who would like to keep
+            individual author names and profile links for each of their channels.
         :param short_name: Account name, helps users with several accounts remember which they are currently using.
             Displayed to the user above the "Edit/Publish" button on Telegra.ph, other users don't see this name.
         :param author_name: Default author name used when creating new articles.
         :param author_url: Default profile link, opened when users click on the author's name below the title.
             Can be any link, not necessarily to a Telegram profile or channel.
-        :return:
+        :return: Account object with the regular fields and an additional access_token field.
         """
         token_data = create_api_token(short_name, author_name, author_url, self.user_agent)
         self.use_api = True
         self.account = token_data
         self.access_token = token_data['access_token']
         return token_data
+
+    def revoke_access_token(self):
+        """
+            Use this method to revoke access_token and generate a new one, for example, if the user would like to reset
+            all connected sessions, or you have reasons to believe the token was compromised
+        :return: Account object with new access_token and auth_url fields.
+        """
+        if not self.access_token:
+            raise Exception('Access token is required')
+
+        json_response = self._api_request('revokeAccessToken')
+        if json_response['ok'] is True:
+            self.access_token = json_response['result']['access_token']
+
+        return json_response['result']
+
+    def create_page(self, *args, **kwargs):
+        """
+            Shortcut method for post()
+        """
+        return self.post(*args, **kwargs)
+
+    def edit_page(self, *args, **kwargs):
+        """
+            Shortcut method for edit()
+        """
+        return self.edit(*args, **kwargs)
+
+    def create_account(self, *args, **kwargs):
+        """
+            Shortcut method for create_api_token()
+        """
+        return self.create_api_token(*args, **kwargs)
