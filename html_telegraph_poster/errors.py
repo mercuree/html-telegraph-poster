@@ -39,11 +39,19 @@ class TelegraphContentTooBigError(Error):
         super(Error, TelegraphError).__init__(self, message)
 
 
+class TelegraphFloodWaitError(Error):
+    def __init__(self, message):
+        super(Error, TelegraphError).__init__(self, message)
+        self.FLOOD_WAIT_IN_SECONDS = int(message.split('FLOOD_WAIT_')[1])
+
+
 class TelegraphError(Error):
     def __init__(self, message):
         if 'Unknown error' in message:
             raise TelegraphUnknownError(message)
         elif 'Content is too big' in message:
             raise TelegraphContentTooBigError(message)
+        elif 'FLOOD_WAIT_' in message:
+            raise TelegraphFloodWaitError(message)
         else:
             super(Error, TelegraphError).__init__(self, message)
