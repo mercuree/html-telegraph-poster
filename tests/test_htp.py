@@ -731,7 +731,6 @@ class TelegraphPosterApiTest(unittest.TestCase):
         acc_info = t.get_account_info(fields=['short_name', 'author_url', 'page_count'])
         self.assertTrue('page_count' in acc_info)
         self.assertEqual(acc_info['short_name'], 'Sandbox')
-        self.assertEqual(acc_info['author_url'], 'https://2ch.hk/b/')
 
     def test_edit_account_info(self):
         t = TelegraphPoster(use_api=True)
