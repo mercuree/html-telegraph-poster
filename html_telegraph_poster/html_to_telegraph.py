@@ -422,18 +422,18 @@ def _upload(title, author, text,
         'User-Agent': user_agent,
         'Origin': 'http://telegra.ph'
     }
-    r = requests.Session()
-    r.mount('https://', requests.adapters.HTTPAdapter(max_retries=3))
-    response = r.post(save_url, timeout=4, headers=headers, cookies=cookies, data=m.to_string())
+    with requests.Session() as r:
+        r.mount('https://', requests.adapters.HTTPAdapter(max_retries=3))
 
-    result = json.loads(response.text)
-    if 'path' in result:
-        result['tph_uuid'] = response.cookies.get('tph_uuid') or tph_uuid
-        result['url'] = base_url + '/' + result['path']
-        return result
-    else:
-        error_msg = result['error'] if 'error' in result else ''
-        raise TelegraphError(error_msg)
+        response = r.post(save_url, timeout=4, headers=headers, cookies=cookies, data=m.to_string())
+        result = json.loads(response.text)
+        if 'path' in result:
+            result['tph_uuid'] = response.cookies.get('tph_uuid') or tph_uuid
+            result['url'] = base_url + '/' + result['path']
+            return result
+        else:
+            error_msg = result['error'] if 'error' in result else ''
+            raise TelegraphError(error_msg)
 
 
 def _upload_via_api(title, author, text, author_url='', access_token=None, user_agent=default_user_agent,
