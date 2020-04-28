@@ -21,7 +21,7 @@ pip install html-telegraph-poster
 ## Usage
 ```python
 >>> from html_telegraph_poster import TelegraphPoster
->>> t = TelegraphPoster()
+>>> t = TelegraphPoster(use_api=True)
 >>> t.create_api_token('Elon Musk', 'Elon', 'https://www.spacex.com/') # second and third params are optional
 {'access_token': '9f3bab568f*************', 'auth_url': 'https://edit.telegra.ph/auth/HFYo***********', 'author_name': 'Elon', 'short_name': 'Elon Musk', 'author_url': 'https://www.spacex.com/'}
 >>> t.post(title='Just another funny joke', author='by me', text='<blockquote>Really hard way</blockquote>')
