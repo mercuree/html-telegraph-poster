@@ -33,6 +33,11 @@ class TelegraphUnknownError(Error):
     pass
 
 
+class TelegraphPageSaveFailed(Error):
+    # reason is unknown
+    pass
+
+
 class TelegraphContentTooBigError(Error):
     def __init__(self, message):
         message += ". Max size is 64kb including markup"
@@ -53,5 +58,7 @@ class TelegraphError(Error):
             raise TelegraphContentTooBigError(message)
         elif 'FLOOD_WAIT_' in message:
             raise TelegraphFloodWaitError(message)
+        elif 'PAGE_SAVE_FAILED' in message:
+            raise TelegraphPageSaveFailed(message)
         else:
             super(Error, TelegraphError).__init__(self, message)
