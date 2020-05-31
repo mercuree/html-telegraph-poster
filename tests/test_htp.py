@@ -394,13 +394,20 @@ class TelegraphConversionTest(unittest.TestCase):
         <a href="https://twitter.com/durov/status/803680844200210432"></a>
         <a name="no_href"></a></blockquote>
         '''
-        self.assertJson(
-            [
+        duplicated_link_html = '''
+        <blockquote class="twitter-tweet"><p>
+        <a href="https://twitter.com/JoshConstine">@JoshConstine</a>
+        <a href="https://twitter.com/TechCrunch">@TechCrunch</a> The distribution of games</p>
+        <a href="https://twitter.com/durov/status/803680844200210432"></a>
+        <a href="https://twitter.com/durov/status/803680844200210432"></a>
+        <a name="no_href"></a></blockquote>
+        '''
+        assert_with = [
                 {'tag': 'figure', 'children': [{'tag': 'iframe', 'attrs': {
                     'src': '/embed/twitter?url=https%3A%2F%2Ftwitter.com%2Fdurov%2Fstatus%2F803680844200210432'}}]}
-            ],
-            convert_html_to_telegraph_format(html, clean_html=True)
-        )
+            ]
+        self.assertJson(assert_with, convert_html_to_telegraph_format(html, clean_html=True))
+        self.assertJson(assert_with, convert_html_to_telegraph_format(duplicated_link_html, clean_html=True))
 
     def test_lists(self):
         html = '''

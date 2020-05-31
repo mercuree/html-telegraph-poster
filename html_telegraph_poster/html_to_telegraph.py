@@ -196,6 +196,7 @@ def preprocess_media_tags(element):
                     element.addprevious(twitter_frame)
                     _wrap_figure(twitter_frame)
                     element.drop_tree()
+                    break
 
 
 def move_to_top(body):
