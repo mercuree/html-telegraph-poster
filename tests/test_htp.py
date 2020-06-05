@@ -725,6 +725,20 @@ class TelegraphPosterApiTest(unittest.TestCase):
             result2['path']
         )
 
+    def test_edit_with_path(self):
+        html = '<p>test paragraph</p>'
+        t1 = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token)
+        t2 = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token)
+        result = t1.post('test_page0201', 'au', html)
+        result2 = t2.edit(title='test_page0201_edit', text='<p>test paragraph edited</p>', path=result['path'])
+
+        self.assertTrue('url' in result)
+        self.assertTrue('path' in result)
+        self.assertEqual(
+            result['path'],
+            result2['path']
+        )
+
     def test_get_page(self):
         t = TelegraphPoster(use_api=True)
         page = t.get_page('Test-html-telegraph-poster-Page-02-17', return_content=True)

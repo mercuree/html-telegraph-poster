@@ -446,6 +446,10 @@ def _upload_via_api(title, author, text, author_url='', access_token=None, user_
         raise TextRequiredError('Text is required')
     if not access_token:
         raise APITokenRequiredError('API token is required')
+    if not author:
+        author = ''  # author is optional
+    if not author_url:
+        author_url = ''  # author_url is optional
 
     content = convert_html_to_telegraph_format(text, clean_html) if convert_html else text
     method = '/createPage' if not path else '/editPage'
@@ -517,6 +521,7 @@ class TelegraphPoster(object):
         return resp.json()
 
     def post(self, title, author, text, author_url=''):
+        self.path = None
         self.title = title
         self.author = author
         self.author_url = author_url
@@ -527,18 +532,18 @@ class TelegraphPoster(object):
             self.page_id = result['page_id']
         return result
 
-    def edit(self, title=None, author=None, text=None):
+    def edit(self, title=None, author=None, text=None, author_url='', path=None):
         params = {
             'title': title or self.title,
             'author': author or self.author,
             'text': text or self.text,
-            'author_url': self.author_url,
+            'author_url': author_url or self.author_url,
             'user_agent': self.user_agent,
             'clean_html': self.clean_html,
             'convert_html': self.convert_html
         }
         if self.use_api:
-            result = _upload_via_api(access_token=self.access_token, path=self.path, **params)
+            result = _upload_via_api(access_token=self.access_token, path=path or self.path, **params)
             self.path = result['path']
             return result
         else:
