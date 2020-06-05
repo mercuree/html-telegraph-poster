@@ -13,19 +13,19 @@ base_url = 'http://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
 api_url = 'https://api.telegra.ph'
 default_user_agent = 'Python_telegraph_poster/0.1'
-allowed_tags = ['a', 'aside', 'b', 'blockquote', 'br', 'code', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i',
-                'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'u', 'ul', 'video']
-allowed_top_level_tags = ['aside', 'blockquote', 'pre', 'figure', 'h3', 'h4', 'hr', 'ol', 'p', 'ul']
+allowed_tags = ('a', 'aside', 'b', 'blockquote', 'br', 'code', 'em', 'figcaption', 'figure', 'h3', 'h4', 'hr', 'i',
+                'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'u', 'ul', 'video')
+allowed_top_level_tags = ('aside', 'blockquote', 'pre', 'figure', 'h3', 'h4', 'hr', 'ol', 'p', 'ul')
 
-elements_with_text = ['a', 'aside', 'b', 'blockquote', 'em', 'h3', 'h4', 'p', 'strong']
+elements_with_text = ('a', 'aside', 'b', 'blockquote', 'em', 'h3', 'h4', 'p', 'strong')
 
-youtube_re = r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/'
-vimeo_re = r'(https?:)?//player\.vimeo\.com/video/(\d+)'
+youtube_re = re.compile(r'(https?:)?//(www\.)?youtube(-nocookie)?\.com/embed/')
+vimeo_re = re.compile(r'(https?:)?//player\.vimeo\.com/video/(\d+)')
 twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/status/\d+')
 telegram_embed_iframe_re = re.compile(r'^(https?)://(t\.me|telegram\.me|telegram\.dog)/([a-zA-Z0-9_]+)/(\d+)', re.IGNORECASE)
-telegram_embed_script_re = re.compile(r'<script(?=[^>]+\sdata-telegram-post=[\'"]([^\'"]+))[^<]+</script>', re.IGNORECASE)
+telegram_embed_script_re = re.compile(r'''<script(?=[^>]+\sdata-telegram-post=['"]([^'"]+))[^<]+</script>''', re.IGNORECASE)
 pre_content_re = re.compile(r'<(pre|code)(>|\s[^>]*>)[\s\S]*?</\1>')
-line_breaks_and_empty_strings = re.compile('(\s{2,}|\s*\r?\n\s*)')
+line_breaks_and_empty_strings = re.compile(r'(\s{2,}|\s*\r?\n\s*)')
 header_re = re.compile(r'<head[^a-z][\s\S]*</head>')
 
 
@@ -169,8 +169,8 @@ def preprocess_media_tags(element):
         elif element.tag == 'iframe':
             iframe_src = element.get('src')
 
-            youtube = re.match(youtube_re, iframe_src)
-            vimeo = re.match(vimeo_re, iframe_src)
+            youtube = youtube_re.match(iframe_src)
+            vimeo = vimeo_re.match(iframe_src)
             telegram = re.match(telegram_embed_iframe_re, iframe_src)
             if youtube or vimeo or telegram:
                 element.text = ''  # ignore any legacy text
