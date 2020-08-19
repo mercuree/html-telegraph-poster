@@ -25,6 +25,7 @@ twitter_re = re.compile(r'(https?:)?//(www\.)?twitter\.com/[A-Za-z0-9_]{1,15}/st
 telegram_embed_iframe_re = re.compile(r'^(https?)://(t\.me|telegram\.me|telegram\.dog)/([a-zA-Z0-9_]+)/(\d+)', re.IGNORECASE)
 telegram_embed_script_re = re.compile(r'''<script(?=[^>]+\sdata-telegram-post=['"]([^'"]+))[^<]+</script>''', re.IGNORECASE)
 pre_content_re = re.compile(r'<(pre|code)(>|\s[^>]*>)[\s\S]*?</\1>')
+line_breaks_inside_pre = re.compile(r'<br(/?>|\s[^<>]*>)')
 line_breaks_and_empty_strings = re.compile(r'(\s{2,}|\s*\r?\n\s*)')
 header_re = re.compile(r'<head[^a-z][\s\S]*</head>')
 
@@ -81,7 +82,7 @@ def replace_line_breaks_except_pre(html_string, replace_by=' '):
     for k in range(1, len(pre_ranges)):
         part = html_string[pre_ranges[k-1]:pre_ranges[k]]
         if k % 2 == 0:
-            out += part
+            out += line_breaks_inside_pre.sub('\n', part)
         else:
             out += line_breaks_and_empty_strings.sub(replace_by, part)
     return out

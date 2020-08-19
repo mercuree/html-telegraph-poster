@@ -568,6 +568,12 @@ Installing setuptools, pip...done.
         </code>
         <code></code>empty code
         '''
+        html_br_inside_pre = '''
+<pre># test_div.py<br>import pytest<br /><br>@pytest.fixture<br>def input_value():<br>   input = 39<br>   return input<br>
+def test_divisible_by_3(input_value):<br>   assert input_value % 3 == 0<br>
+def test_divisible_by_6(input_value):<br>   assert input_value % 6 == 0
+</pre>
+        '''
         self.assertJson(
             [
                 {"tag": "pre", "children": [
@@ -618,6 +624,20 @@ Installing setuptools, pip...done.
                 {'tag': 'p', 'children': [{'tag': 'code'}, 'empty code']}
             ],
             convert_html_to_telegraph_format(html5, clean_html=True)
+        )
+        self.assertJson(
+            [{"tag": "pre", "children": [
+                "# test_div.py\nimport pytest\n\n"
+                "@pytest.fixture\n"
+                "def input_value():\n"
+                "   input = 39\n"
+                "   return input\n\n"
+                "def test_divisible_by_3(input_value):\n"
+                "   assert input_value % 3 == 0\n\n"
+                "def test_divisible_by_6(input_value):\n"
+                "   assert input_value % 6 == 0\n"
+            ]}],
+            convert_html_to_telegraph_format(html_br_inside_pre, clean_html=True)
         )
 
     def test_duplicated_bad_tags(self):
