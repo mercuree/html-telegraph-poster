@@ -453,6 +453,7 @@ class TelegraphConversionTest(unittest.TestCase):
         html = '<blockquote>Text inside blockquote</blockquote>'
         quote_with_para = '<blockquote><p>first para</p><p>second para</p></blockquote>'
         quote_para_strong = '<blockquote><p>first para</p><strong>strong text</strong></blockquote>'
+        quote_inside_figure = '<figure><blockquote>Blockquote text inside figure</blockquote></figure>'
         self.assertJson(
             [{'children': ['Text inside blockquote'], 'tag': 'blockquote'}],
             convert_html_to_telegraph_format(html, clean_html=True)
@@ -466,6 +467,9 @@ class TelegraphConversionTest(unittest.TestCase):
             [{'children': ['first para\n', {u'children': [u'strong text'], u'tag': u'strong'}], 'tag': 'blockquote'}],
             convert_html_to_telegraph_format(quote_para_strong, clean_html=True)
         )
+        self.assertJson(
+            [{'children': ['Blockquote text inside figure'], 'tag': 'blockquote'}],
+            convert_html_to_telegraph_format(quote_inside_figure, clean_html=True))
 
     def test_bad_para(self):
         html = '<aside><p>text inside para</p><p>another para</p></aside>'

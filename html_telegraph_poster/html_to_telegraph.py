@@ -172,7 +172,7 @@ def preprocess_media_tags(element):
 
             youtube = youtube_re.match(iframe_src)
             vimeo = vimeo_re.match(iframe_src)
-            telegram = re.match(telegram_embed_iframe_re, iframe_src)
+            telegram = telegram_embed_iframe_re.match(iframe_src)
             if youtube or vimeo or telegram:
                 element.text = ''  # ignore any legacy text
                 if youtube:
@@ -203,7 +203,7 @@ def preprocess_media_tags(element):
 def move_to_top(body):
     # this should be improved to include nested elements (like lists)
     # still buggy
-    elements = body.xpath('./*/figure')
+    elements = body.xpath('./*/figure|./*//blockquote')
     for element in elements:
         preceding_elements = element.xpath('./preceding-sibling::*')
         parent = element.getparent()
@@ -302,6 +302,11 @@ def post_process(body):
     elements_with_class = body.xpath('.//*[@class]')
     for element in elements_with_class:
         element.attrib.pop('class')
+
+    # remove empty figure
+    for x in body.xpath('.//figure[not(descendant::*[self::iframe|self::figcaption|self::img|self::video])]'
+                        '[not(normalize-space(text()))]'):
+        x.drop_tree()
 
 
 def _recursive_convert(element):
