@@ -279,7 +279,6 @@ class TelegraphConversionTest(unittest.TestCase):
         )
 
     def test_iframe(self):
-        # multiple br tags should be replaced with one line break
         html = '<iframe src="//www.youtube.com/embed/abcdef">legacy text</iframe>'
         iframe_empty_src = '<iframe src=""></iframe>'
         iframe_no_src = '<iframe></iframe>'
@@ -474,9 +473,14 @@ class TelegraphConversionTest(unittest.TestCase):
     def test_bad_para(self):
         html = '<aside><p>text inside para</p><p>another para</p></aside>'
         html2 = '<figure><figcaption><p>text inside para</p><p>another para</p></figcaption></figure>'
+        figcaption_para_with_link = '<figure><figcaption>' \
+                                    '<p><a href="https://telegram.org/">Telegram</a></p><p>Text after link</p>' \
+                                    '</figcaption></figure>'
         html3 = '<blockquote><p></p><p>second para</p></blockquote>'
         html4 = '<blockquote><p>first para</p><strong><em></em></strong><em>em text</em></blockquote>'
         html5 = '<blockquote><p>first para</p><em></em><strong></strong><em></em></blockquote>'
+        # TODO: write html6 test
+        html6 = '''<blockquote class="cut">\n<p>text inside</p>\n</blockquote>'''
         self.assertJson(
             [{'children': ['text inside para\nanother para'], 'tag': 'aside'}],
             convert_html_to_telegraph_format(html, clean_html=True)
@@ -496,6 +500,10 @@ class TelegraphConversionTest(unittest.TestCase):
         self.assertJson(
             [{'children': [u'first para'], 'tag': 'blockquote'}],
             convert_html_to_telegraph_format(html5, clean_html=True)
+        )
+        self.assertJson(
+            [{"tag": "figure", "children": [{"tag": "figcaption", "children": ["Telegram\nText after link"]}]}],
+            convert_html_to_telegraph_format(figcaption_para_with_link, clean_html=True)
         )
 
     def test_convert_without_clean(self):
