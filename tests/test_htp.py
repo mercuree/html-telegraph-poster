@@ -2,7 +2,7 @@
 import unittest
 from html_telegraph_poster.html_to_telegraph import convert_html_to_telegraph_format
 from html_telegraph_poster.html_to_telegraph import convert_json_to_html
-from html_telegraph_poster.upload_images import upload_image
+from html_telegraph_poster.upload_images import upload_image, _get_mimetype_from_response_headers
 from html_telegraph_poster import TelegraphPoster
 import json
 
@@ -711,6 +711,10 @@ class UploadImageTest(unittest.TestCase):
     def test_upload(self):
         telegraph_url = upload_image('http://httpbin.org/image/jpeg')
         self.assertIn('http://telegra.ph/file/', telegraph_url)
+
+    def test_mime_headers(self):
+        self.assertEqual('image/jpeg', _get_mimetype_from_response_headers({'Content-Type': 'image/jpg'}))
+        self.assertEqual('image/jpeg', _get_mimetype_from_response_headers({'Content-Type': 'image/jpeg'}))
 
 
 class TelegraphPosterNoApiTest(unittest.TestCase):

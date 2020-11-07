@@ -25,7 +25,16 @@ class FileTypeNotSupported(Error):
 
 
 def _check_mimetypes(type):
-    return type in ['image/jpeg', 'image/png', 'image/gif', 'video/mp4']
+    return type in ('image/jpeg', 'image/png', 'image/gif', 'video/mp4')
+
+
+def _get_mimetype_from_response_headers(headers):
+    types = re.split(r'[;,]', headers['Content-Type'])
+    if len(types):
+        ext = mimetypes.guess_extension(types[0], strict=False)
+        if ext:
+            return mimetypes.types_map.get(ext, mimetypes.common_types.get(ext, ''))
+    return ''
 
 
 def upload_image(file_name_or_url, user_agent='Python_telegraph_poster/0.1'):
@@ -36,7 +45,7 @@ def upload_image(file_name_or_url, user_agent='Python_telegraph_poster/0.1'):
         if img.status_code != 200 or 'Content-Type' not in img.headers:
             raise GetImageRequestError('Url request failed')
 
-        img_content_type = re.split(';|,', img.headers['Content-Type'])[0]
+        img_content_type = _get_mimetype_from_response_headers(img.headers)
         img = BytesIO(img.content)
 
     else:
@@ -67,6 +76,9 @@ def upload_image(file_name_or_url, user_agent='Python_telegraph_poster/0.1'):
         if type(json_response) is list and len(json_response):
             return 'src' in json_response[0] and base_url + json_response[0]['src'] or ''
         elif type(json_response) is dict:
-            return ''
+            if json_response.get('error') == 'File type invalid':
+                raise FileTypeNotSupported('This file is unsupported')
+            else:
+                return str(json_response)
     else:
         raise Exception('Error while uploading the image')
