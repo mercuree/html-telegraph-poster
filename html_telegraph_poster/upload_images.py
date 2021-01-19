@@ -37,9 +37,12 @@ def _get_mimetype_from_response_headers(headers):
     return ''
 
 
-def upload_image(file_name_or_url, user_agent='Python_telegraph_poster/0.1'):
+def upload_image(file_name_or_url, user_agent='Python_telegraph_poster/0.1', return_json=False):
 
-    if re.match(r'^https?://', file_name_or_url, flags=re.IGNORECASE):
+    if hasattr(file_name_or_url, 'read') and hasattr(file_name_or_url, 'name'):
+        img = file_name_or_url
+        img_content_type = mimetypes.guess_type(file_name_or_url.name)[0]
+    elif re.match(r'^https?://', file_name_or_url, flags=re.IGNORECASE):
         img = requests.get(file_name_or_url, headers={'User-Agent': user_agent})
 
         if img.status_code != 200 or 'Content-Type' not in img.headers:
@@ -73,7 +76,9 @@ def upload_image(file_name_or_url, user_agent='Python_telegraph_poster/0.1'):
 
     if json_response.status_code == requests.codes.ok and json_response.content:
         json_response = json_response.json()
-        if type(json_response) is list and len(json_response):
+        if return_json:
+            return json_response
+        elif type(json_response) is list and len(json_response):
             return 'src' in json_response[0] and base_url + json_response[0]['src'] or ''
         elif type(json_response) is dict:
             if json_response.get('error') == 'File type invalid':

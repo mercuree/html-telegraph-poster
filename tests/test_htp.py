@@ -10,6 +10,22 @@ class UploadImageTest(unittest.TestCase):
         telegraph_url = upload_image('http://httpbin.org/image/jpeg')
         self.assertIn('http://telegra.ph/file/', telegraph_url)
 
+    def test_upload_return_json(self):
+        telegraph_response = upload_image('http://httpbin.org/image/jpeg', return_json=True)
+        self.assertIsInstance(telegraph_response, list)
+        self.assertTrue(len(telegraph_response), 1)
+        self.assertNotEqual(telegraph_response[0].get('src'), None)
+
+    def test_upload_from_file_object(self):
+        b64file = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII='
+        from io import BytesIO
+        from base64 import b64decode
+        with BytesIO(b64decode(b64file)) as file_to_upload:
+            # emulate filename for mimetype detection
+            file_to_upload.name = 'sample.png'
+            telegraph_image_url = upload_image(file_to_upload)
+            self.assertIn('http://telegra.ph/file/', telegraph_image_url)
+
     def test_mime_headers(self):
         self.assertEqual('image/jpeg', _get_mimetype_from_response_headers({'Content-Type': 'image/jpg'}))
         self.assertEqual('image/jpeg', _get_mimetype_from_response_headers({'Content-Type': 'image/jpeg'}))
