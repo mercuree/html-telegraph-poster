@@ -3,8 +3,8 @@ from setuptools import setup
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setup(name='html_telegraph_poster',
-      version='0.3.0',
+setup(name='html-telegraph-poster',
+      version='0.3.1',
       description='Posts your html to telegra.ph blogging service',
       long_description=long_description,
       long_description_content_type="text/markdown",
