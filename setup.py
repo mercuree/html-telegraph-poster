@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='html-telegraph-poster',
-      version='0.3.1',
+      version='0.3.2',
       description='Posts your html to telegra.ph blogging service',
       long_description=long_description,
       long_description_content_type="text/markdown",
