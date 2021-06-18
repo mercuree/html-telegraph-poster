@@ -136,7 +136,7 @@ def _fragments_from_string(html_string):
     if not len(fragments):
         return []
     # convert and append text node before starting tag
-    if not isinstance(fragments[0], html.HtmlElement):
+    if isinstance(fragments[0], str):
         if len(fragments[0].strip()) > 0:
             if len(fragments) == 1:
                 return html.fragments_fromstring('<p>%s</p>' % fragments[0])
