@@ -10,8 +10,8 @@ LOG = logging.getLogger(__name__)
 
 
 class DocumentPreprocessor:
-    def __init__(self, input_html):
-        self.input_html = input_html
+    def __init__(self, input_document):
+        self.input_document = input_document
         self.parsed_document = self._parse_document()
 
     def get_processed_html(self):
@@ -27,8 +27,14 @@ class DocumentPreprocessor:
             image.attrib.update({'src': new_image_url})
 
     def _parse_document(self):
-        fragments = _fragments_from_string(self.input_html)
-        document = fragments[0].xpath('/*')[0] if len(fragments) else None
+        if isinstance(self.input_document, str):
+            fragments = _fragments_from_string(self.input_document)
+            document = fragments[0].xpath('/*')[0] if len(fragments) else None
+        elif isinstance(self.input_document, lxml.html.HtmlMixin):
+            document = self.input_document.xpath('/*')[0]
+        else:
+            raise TypeError('DocumentPreprocessor accepts only html string or lxml document object')
+
         return document
 
     def _make_links_absolute(self, base_url=None):
