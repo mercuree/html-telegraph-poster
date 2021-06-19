@@ -57,3 +57,18 @@ upload_image("file_path.jpg")
 upload_image("http://example.com/img.png")
 
 ```
+## Utils module
+Utils module provides ability to make some pre-process steps before document is passed to the converter.
+#### Uploading all images to the telegra.ph
+```python
+from html_telegraph_poster.utils import DocumentPreprocessor
+
+dp = DocumentPreprocessor(html_string)
+dp.upload_all_images()
+dp.get_processed_html() # this should return html string with uploaded and replaced image urls
+```
+Optionally you can pass base_url if the document contains images with relative paths
+```python
+dp.upload_all_images(base_url='https://example.com')
+dp.get_processed_html() 
+``` 
