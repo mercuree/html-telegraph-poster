@@ -5,6 +5,7 @@ import logging
 from .upload_images import upload_image
 from .converter import _fragments_from_string
 import lxml.html
+import concurrent.futures
 
 LOG = logging.getLogger(__name__)
 
@@ -17,14 +18,29 @@ class DocumentPreprocessor:
     def get_processed_html(self):
         return lxml.html.tostring(self.parsed_document, encoding='unicode')
 
-    def upload_all_images(self, base_url=None):
+    def upload_image(self, url):
+        new_image_url = None
+        try:
+            new_image_url = upload_image(url)
+        except Exception:
+            LOG.exception(f'Could not upload image {url}')
+
+        return new_image_url
+
+    def upload_all_images(self, base_url=None, max_workers=3):
         self._make_links_absolute(base_url)
         images = self.parsed_document.xpath('.//img[@src][not(contains(@src, "//telegra.ph/file/")) and'
                                             ' not(contains(@src, "//graph.org/file/"))]')
-        for image in images:
-            old_image_url = image.attrib.get('src')
-            new_image_url = upload_image(old_image_url)
-            image.attrib.update({'src': new_image_url})
+
+        def _upload_and_replace_url(image_element):
+            old_image_url = image_element.attrib.get('src')
+            new_image_url = self.upload_image(old_image_url)
+            if new_image_url:
+                image_element.attrib.update({'src': new_image_url})
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for image in images:
+                executor.submit(_upload_and_replace_url, image)
 
     def _parse_document(self):
         if isinstance(self.input_document, str):
