@@ -33,14 +33,15 @@ class DocumentPreprocessorImageUploadTest(unittest.TestCase):
     def test_upload_all_images(self):
         html_images = self.document.format(
             headcontent='',
-            bodycontent=self.html_figures.format('http://httpbin.org/image/jpeg', 'http://httpbin.org/image/png')
+            bodycontent='<img src="http://telegra.ph/file/test.jpeg" /> ' +
+                        self.html_figures.format('http://httpbin.org/image/jpeg', 'http://httpbin.org/image/png')
         )
 
         dp = DocumentPreprocessor(html_images)
         dp.upload_all_images()
 
         self.assertEqual(
-            2, len(dp.parsed_document.body.xpath('.//img[starts-with(@src, "http://telegra.ph/file/")]'))
+            3, len(dp.parsed_document.body.xpath('.//img[starts-with(@src, "http://telegra.ph/file/")]'))
         )
         self.assertTrue(
             '<img src="http://telegra.ph/file/' in dp.get_processed_html()

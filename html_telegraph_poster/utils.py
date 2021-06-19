@@ -19,7 +19,8 @@ class DocumentPreprocessor:
 
     def upload_all_images(self, base_url=None):
         self._make_links_absolute(base_url)
-        images = self.parsed_document.xpath('.//img[@src]')
+        images = self.parsed_document.xpath('.//img[@src][not(contains(@src, "//telegra.ph/file/")) and'
+                                            ' not(contains(@src, "//graph.org/file/"))]')
         for image in images:
             old_image_url = image.attrib.get('src')
             new_image_url = upload_image(old_image_url)
