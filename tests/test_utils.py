@@ -95,3 +95,6 @@ class DocumentPreprocessorImageUploadTest(unittest.TestCase):
         self.assertTrue(
             '<a href="http://httpbin.org/test_link.html">' in processed_html
         )
+
+    def test_pass_invalid_document_type(self):
+        self.assertRaises(TypeError, DocumentPreprocessor, b'byte string')
