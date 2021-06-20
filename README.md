@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/mercuree/html-telegraph-poster.svg?branch=master)](https://travis-ci.com/mercuree/html-telegraph-poster)
+[![Python package](https://github.com/mercuree/html-telegraph-poster/actions/workflows/python-package.yml/badge.svg)](https://github.com/mercuree/html-telegraph-poster/actions/workflows/python-package.yml)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/html-telegraph-poster?master)](https://pypi.org/project/html-telegraph-poster/)
 
 # Python html to telegra.ph poster
