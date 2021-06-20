@@ -53,8 +53,11 @@ from html_telegraph_poster.upload_images import upload_image
 # upload file
 upload_image("file_path.jpg")
 
-#upload url
+# upload url
 upload_image("http://example.com/img.png")
+
+# setting request and response timeout
+upload_image("http://example.com/img.png", get_timeout=(5, 5), upload_timeout=(5, 5))
 
 ```
 ## Utils module
