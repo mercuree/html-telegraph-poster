@@ -1,6 +1,7 @@
 # coding=utf8
 import unittest
 from html_telegraph_poster.upload_images import upload_image, _get_mimetype_from_response_headers
+from html_telegraph_poster.upload_images import GetImageRequestError
 from html_telegraph_poster import TelegraphPoster
 
 
@@ -29,6 +30,11 @@ class UploadImageTest(unittest.TestCase):
     def test_mime_headers(self):
         self.assertEqual('image/jpeg', _get_mimetype_from_response_headers({'Content-Type': 'image/jpg'}))
         self.assertEqual('image/jpeg', _get_mimetype_from_response_headers({'Content-Type': 'image/jpeg'}))
+
+    def test_get_delay_timeout(self):
+        def _upload():
+            upload_image('http://httpbin.org/delay/3', return_json=True, get_timeout=(2, 2))
+        self.assertRaises(GetImageRequestError, _upload)
 
 
 class TelegraphPosterNoApiTest(unittest.TestCase):
