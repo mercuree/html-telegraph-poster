@@ -41,7 +41,7 @@ def upload_image(
         file_name_or_url,
         user_agent='Python_telegraph_poster/0.1',
         return_json=False,
-        get_timeout=(5.0, 5.0),
+        get_timeout=(10.0, 10.0),
         upload_timeout=(7.0, 7.0)
     ):
 
