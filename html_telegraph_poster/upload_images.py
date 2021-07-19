@@ -42,15 +42,17 @@ def upload_image(
         user_agent='Python_telegraph_poster/0.1',
         return_json=False,
         get_timeout=(10.0, 10.0),
-        upload_timeout=(7.0, 7.0)
+        upload_timeout=(7.0, 7.0),
+        request=None
     ):
 
+    request = request or requests
     if hasattr(file_name_or_url, 'read') and hasattr(file_name_or_url, 'name'):
         img = file_name_or_url
         img_content_type = mimetypes.guess_type(file_name_or_url.name)[0]
     elif re.match(r'^https?://', file_name_or_url, flags=re.IGNORECASE):
         try:
-            img = requests.get(file_name_or_url, headers={'User-Agent': user_agent}, timeout=get_timeout)
+            img = request.get(file_name_or_url, headers={'User-Agent': user_agent}, timeout=get_timeout)
         except:
             raise GetImageRequestError('Url request failed')
 
@@ -79,7 +81,7 @@ def upload_image(
         'file': ('blob', img, img_content_type)
     }
     try:
-        json_response = requests.post(upload_file_url, timeout=upload_timeout, files=files, headers=headers)
+        json_response = request.post(upload_file_url, timeout=upload_timeout, files=files, headers=headers)
     except requests.exceptions.ReadTimeout:
         raise ImageUploadHTTPError('Request timeout')
 

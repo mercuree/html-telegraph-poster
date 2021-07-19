@@ -56,7 +56,7 @@ def _upload(title, author, text,
 
 
 def _upload_via_api(title, author, text, author_url='', access_token=None, user_agent=default_user_agent,
-                    convert_html=True,  clean_html=True, path=None):
+                    convert_html=True,  clean_html=True, path=None, request=None):
 
     if not title:
         raise TitleRequiredError('Title is required')
@@ -69,6 +69,7 @@ def _upload_via_api(title, author, text, author_url='', access_token=None, user_
     if not author_url:
         author_url = ''  # author_url is optional
 
+    request = request or requests
     content = convert_html_to_telegraph_format(text, clean_html) if convert_html else text
     method = '/createPage' if not path else '/editPage'
 
@@ -82,7 +83,7 @@ def _upload_via_api(title, author, text, author_url='', access_token=None, user_
     if path:
         params.update({'path': path})
 
-    resp = requests.post(api_url + method, params, headers={'User-Agent': user_agent}).json()
+    resp = request.post(api_url + method, params, headers={'User-Agent': user_agent}).json()
     if resp['ok'] is True:
         return {
             'path': resp['result']['path'],
@@ -93,7 +94,7 @@ def _upload_via_api(title, author, text, author_url='', access_token=None, user_
         raise TelegraphError(error_msg)
 
 
-def create_api_token(short_name, author_name=None, author_url=None, user_agent=default_user_agent):
+def create_api_token(short_name, author_name=None, author_url=None, user_agent=default_user_agent, request=None):
     params = {
         'short_name': short_name,
     }
@@ -102,7 +103,8 @@ def create_api_token(short_name, author_name=None, author_url=None, user_agent=d
     if author_url:
         params.update({'author_url': author_url})
 
-    resp = requests.get(api_url+'/createAccount', params, headers={'User-Agent': user_agent})
+    request = request or requests
+    resp = request.get(api_url+'/createAccount', params, headers={'User-Agent': user_agent})
     json_data = resp.json()
     return json_data['result']
 
@@ -113,7 +115,7 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
 
 class TelegraphPoster(object):
     def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent, clean_html=True, convert_html=True,
-                 use_api=False, access_token=None):
+                 use_api=False, access_token=None, request=None):
         self.title = None
         self.author = None
         self.author_url = None
@@ -127,6 +129,7 @@ class TelegraphPoster(object):
         self.access_token = access_token or os.getenv('TELEGRAPH_ACCESS_TOKEN', None)
         self.account = None
         self.use_api = use_api
+        self.request = request or requests  # accept requests Session obejct and fallback to standard behaviour
         if self.access_token:
             # use api anyway
             self.use_api = True
@@ -135,7 +138,7 @@ class TelegraphPoster(object):
         params = params or {}
         if self.access_token:
             params['access_token'] = self.access_token
-        resp = requests.get(api_url + '/' + method, params, headers={'User-Agent': self.user_agent})
+        resp = self.request.get(api_url + '/' + method, params=params, headers={'User-Agent': self.user_agent})
         return resp.json()
 
     def post(self, title, author, text, author_url=''):
