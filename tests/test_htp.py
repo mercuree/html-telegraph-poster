@@ -53,7 +53,7 @@ class TelegraphPosterApiTest(unittest.TestCase):
 
     def setUp(self):
         # Access Token from telegra.ph/api page
-        self.sandbox_access_token = 'b968da509bb76866c35425099bc0989a5ec3b32997d55286c657e6994bbb'
+        self.sandbox_access_token = 'd3b25feccb89e508a9114afb82aa421fe2a9712b963b387cc5ad71e58722'
 
     def test_api_token(self):
         t = TelegraphPoster(use_api=True)
@@ -107,7 +107,7 @@ class TelegraphPosterApiTest(unittest.TestCase):
         t = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token)
         acc_info = t.get_account_info(fields=['short_name', 'author_url', 'page_count'])
         self.assertTrue('page_count' in acc_info)
-        self.assertEqual(acc_info['short_name'], 'Sandbox')
+        self.assertEqual(acc_info['short_name'], 'Sandbox1')
 
     def test_edit_account_info(self):
         t = TelegraphPoster(use_api=True)
