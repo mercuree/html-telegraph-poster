@@ -107,7 +107,7 @@ class TelegraphPosterApiTest(unittest.TestCase):
         t = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token)
         acc_info = t.get_account_info(fields=['short_name', 'author_url', 'page_count'])
         self.assertTrue('page_count' in acc_info)
-        self.assertEqual(acc_info['short_name'], 'Sandbox1')
+        self.assertIn('Sandbox', acc_info['short_name'])
 
     def test_edit_account_info(self):
         t = TelegraphPoster(use_api=True)
