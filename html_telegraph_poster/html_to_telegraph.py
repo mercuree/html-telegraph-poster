@@ -14,7 +14,7 @@ default_user_agent = 'Python_telegraph_poster/0.1'
 
 def _upload(title, author, text,
             author_url='', tph_uuid=None, page_id=None, user_agent=default_user_agent, convert_html=True,
-            clean_html=True):
+            clean_html=True, telegraph_base_url=base_url):
 
     if not title:
         raise TitleRequiredError('Title is required')
@@ -39,7 +39,7 @@ def _upload(title, author, text,
         'Content-Type': m.content_type,
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'User-Agent': user_agent,
-        'Origin': 'http://telegra.ph'
+        'Origin': telegraph_base_url
     }
     with requests.Session() as r:
         r.mount('https://', requests.adapters.HTTPAdapter(max_retries=3))
@@ -48,7 +48,7 @@ def _upload(title, author, text,
         result = json.loads(response.text)
         if 'path' in result:
             result['tph_uuid'] = response.cookies.get('tph_uuid') or tph_uuid
-            result['url'] = base_url + '/' + result['path']
+            result['url'] = telegraph_base_url + '/' + result['path']
             return result
         else:
             error_msg = result['error'] if 'error' in result else ''
@@ -61,7 +61,7 @@ def _prepare_page_upload_params(params):
 
 
 def _upload_via_api(title, author, text, author_url='', access_token=None, user_agent=default_user_agent,
-                    convert_html=True,  clean_html=True, path=None):
+                    convert_html=True,  clean_html=True, path=None, telegraph_api_url=api_url):
 
     if not title:
         raise TitleRequiredError('Title is required')
@@ -91,12 +91,9 @@ def _upload_via_api(title, author, text, author_url='', access_token=None, user_
     if path:
         params.update({'path': path})
 
-    resp = requests.post(api_url + method, data=_prepare_page_upload_params(params), headers=request_headers).json()
+    resp = requests.post(telegraph_api_url + method, data=_prepare_page_upload_params(params), headers=request_headers).json()
     if resp['ok'] is True:
-        return {
-            'path': resp['result']['path'],
-            'url': base_url + '/' + resp['result']['path']
-        }
+        return resp.get('result')
     else:
         error_msg = resp['error'] if 'error' in resp else ''
         raise TelegraphError(error_msg)
@@ -122,7 +119,7 @@ def upload_to_telegraph(title, author, text, author_url='', tph_uuid=None, page_
 
 class TelegraphPoster(object):
     def __init__(self, tph_uuid=None, page_id=None, user_agent=default_user_agent, clean_html=True, convert_html=True,
-                 use_api=False, access_token=None):
+                 use_api=False, access_token=None, telegraph_api_url=api_url, telegraph_base_url=base_url):
         self.title = None
         self.author = None
         self.author_url = None
@@ -136,6 +133,8 @@ class TelegraphPoster(object):
         self.access_token = access_token or os.getenv('TELEGRAPH_ACCESS_TOKEN', None)
         self.account = None
         self.use_api = use_api
+        self.telegraph_api_url = telegraph_api_url
+        self.telegraph_base_url = telegraph_base_url
         if self.access_token:
             # use api anyway
             self.use_api = True
@@ -144,7 +143,7 @@ class TelegraphPoster(object):
         params = params or {}
         if self.access_token:
             params['access_token'] = self.access_token
-        resp = requests.get(api_url + '/' + method, params, headers={'User-Agent': self.user_agent})
+        resp = requests.get(self.telegraph_api_url + '/' + method, params, headers={'User-Agent': self.user_agent})
         return resp.json()
 
     def post(self, title, author, text, author_url=''):
@@ -170,6 +169,7 @@ class TelegraphPoster(object):
             'convert_html': self.convert_html
         }
         if self.use_api:
+            params['telegraph_api_url'] = self.telegraph_api_url
             result = _upload_via_api(access_token=self.access_token, path=path or self.path, **params)
             self.path = result['path']
             return result
@@ -229,7 +229,7 @@ class TelegraphPoster(object):
             'return_content': return_content
         })
         if return_content:
-            json_response['result']['html'] = convert_json_to_html(json_response['result']['content'], base_url)
+            json_response['result']['html'] = convert_json_to_html(json_response['result']['content'], self.telegraph_base_url)
         return json_response.get('result')
 
     def get_page_list(self, offset=0, limit=50):

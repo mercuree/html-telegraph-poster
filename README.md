@@ -27,15 +27,22 @@ pip install html-telegraph-poster
 {'access_token': '9f3bab568f*************', 'auth_url': 'https://edit.telegra.ph/auth/HFYo***********', 'author_name': 'Elon', 'short_name': 'Elon Musk', 'author_url': 'https://www.spacex.com/'}
 >>> t.post(title='Just another funny joke', author='by me', text='<blockquote>Really hard way</blockquote>')
 {'path': 'Just-another-funny-joke-06-05-4', 'url': 'http://telegra.ph/Just-another-funny-joke-06-05-4'}
-
-# We can modify this article later
+```
+##### Use graph.org instead of telegra.ph
+```python
+>>> t = TelegraphPoster(use_api=True, telegraph_api_url='https://api.graph.org')
+```
+##### We can modify this article later:
+```python
 >>> t.edit(text=t.text + '<p>some text at the end</p>')
 {'path': 'Just-another-funny-joke-06-05-4', 'url': 'http://telegra.ph/Just-another-funny-joke-06-05-4'}
-
-# Modify page created earlier
+```
+##### Modify page created earlier:
+```python
 >>> t.edit(text="<p>new text</p>", path='/Another-one-page-06-05')
 {'path': 'Another-one-page-06-05', 'url': 'http://telegra.ph/Another-one-page-06-05'}
 ```
+
 ## Generate persistent access token
 Actually it's a good idea to generate access token and put it inside environment variables.
 This command will generate .env file or append  TELEGRAPH_ACCESS_TOKEN at the end of it.

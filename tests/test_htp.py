@@ -39,7 +39,7 @@ class UploadImageTest(unittest.TestCase):
 
 class TelegraphPosterNoApiTest(unittest.TestCase):
     def test_post(self):
-        t = TelegraphPoster()
+        t = TelegraphPoster(use_api=False)
         result = t.post('test_no_api0201', 'unit_test', '<p>first para</p>')
         self.assertTrue(
             'url' in result and
@@ -80,6 +80,13 @@ class TelegraphPosterApiTest(unittest.TestCase):
             result['path'],
             result2['path']
         )
+
+    def test_api_non_default_server(self):
+        html = '<p>test paragraph</p>'
+        t = TelegraphPoster(use_api=True, access_token=self.sandbox_access_token, telegraph_api_url='https://api.graph.org')
+        result = t.post('test_page0201', 'au', html)
+        self.assertTrue('url' in result)
+        self.assertIn('https://graph.org/', result.get('url'))
 
     def test_edit_with_path(self):
         html = '<p>test paragraph</p>'
