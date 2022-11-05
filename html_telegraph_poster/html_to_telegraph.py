@@ -4,7 +4,7 @@ import os
 import requests
 from requests_toolbelt import MultipartEncoder
 from .errors import *
-from .converter import convert_html_to_telegraph_format, convert_json_to_html
+from .converter import convert_html_to_telegraph_format, convert_json_to_html, OutputFormat
 
 base_url = 'http://telegra.ph'
 save_url = 'https://edit.telegra.ph/save'
@@ -55,6 +55,11 @@ def _upload(title, author, text,
             raise TelegraphError(error_msg)
 
 
+def _prepare_page_upload_params(params):
+    # significantly reduce size of request body
+    return json.dumps(params, ensure_ascii=False).encode('utf-8')
+
+
 def _upload_via_api(title, author, text, author_url='', access_token=None, user_agent=default_user_agent,
                     convert_html=True,  clean_html=True, path=None):
 
@@ -69,7 +74,7 @@ def _upload_via_api(title, author, text, author_url='', access_token=None, user_
     if not author_url:
         author_url = ''  # author_url is optional
 
-    content = convert_html_to_telegraph_format(text, clean_html) if convert_html else text
+    content = convert_html_to_telegraph_format(text, clean_html, output_format=OutputFormat.PYTHON_LIST) if convert_html else text
     method = '/createPage' if not path else '/editPage'
 
     params = {
@@ -79,10 +84,14 @@ def _upload_via_api(title, author, text, author_url='', access_token=None, user_
         'author_url': author_url[:512],
         'content': content,
     }
+    request_headers = {
+        'User-Agent': user_agent,
+        'Content-Type': 'application/json'
+    }
     if path:
         params.update({'path': path})
 
-    resp = requests.post(api_url + method, params, headers={'User-Agent': user_agent}).json()
+    resp = requests.post(api_url + method, data=_prepare_page_upload_params(params), headers=request_headers).json()
     if resp['ok'] is True:
         return {
             'path': resp['result']['path'],

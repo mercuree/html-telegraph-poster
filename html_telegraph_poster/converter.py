@@ -28,6 +28,12 @@ line_breaks_and_empty_strings = re.compile(r'(\s{2,}|\s*\r?\n\s*)')
 header_re = re.compile(r'<head[^a-z][\s\S]*</head>')
 
 
+class OutputFormat:
+    HTML_STRING = 'html_string'
+    JSON_STRING = 'json_string'
+    PYTHON_LIST = 'python_list'
+
+
 def clean_article_html(html_string):
 
     html_string = html_string.replace('<h1', '<h3').replace('</h1>', '</h3>')
@@ -372,7 +378,7 @@ def convert_json_to_html(elements, base_url='http://telegra.ph'):
     return html_string
 
 
-def convert_html_to_telegraph_format(html_string, clean_html=True, output_format="json_string"):
+def convert_html_to_telegraph_format(html_string, clean_html=True, output_format=OutputFormat.JSON_STRING):
     if clean_html:
         html_string = clean_article_html(html_string)
 
@@ -393,9 +399,9 @@ def convert_html_to_telegraph_format(html_string, clean_html=True, output_format
     if body is not None:
         content = [_recursive_convert(x) for x in body.iterchildren()]
 
-    if output_format == 'json_string':
+    if output_format == OutputFormat.JSON_STRING:
         return json.dumps(content, ensure_ascii=False)
-    elif output_format == 'python_list':
+    elif output_format == OutputFormat.PYTHON_LIST:
         return content
-    elif output_format == 'html_string':
+    elif output_format == OutputFormat.HTML_STRING:
         return html.tostring(body, encoding='unicode')
