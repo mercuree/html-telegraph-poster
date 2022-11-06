@@ -57,7 +57,7 @@ def _upload(title, author, text,
 
 def _prepare_page_upload_params(params):
     # significantly reduce size of request body
-    return json.dumps(params, ensure_ascii=False).encode('utf-8')
+    return json.dumps(params, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
 
 
 def _upload_via_api(title, author, text, author_url='', access_token=None, user_agent=default_user_agent,
