@@ -1,3 +1,4 @@
 lxml
 requests
 requests_toolbelt
+httpx
