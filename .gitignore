@@ -1,0 +1,4 @@
+/venv/
+/.idea/
+/html_telegraph_poster.egg-info/
+.gitignore
