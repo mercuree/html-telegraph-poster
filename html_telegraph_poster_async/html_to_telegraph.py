@@ -147,6 +147,8 @@ class AsyncTelegraphPoster(object):
 
     async def _api_request(self, method, params=None):
         params = params or {}
+        if params:
+            params = {k: v for k, v in params.items() if v is not None}
         if self.access_token:
             params['access_token'] = self.access_token
         async with httpx.AsyncClient() as client:
